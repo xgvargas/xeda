@@ -33,9 +33,9 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, SmartSide):
         self.restoreState(self.cfg.value('state'))
         #print 'lendo bunda:',self.cfg.value('bunda', type=int)
 
-        m = QMenu(self)
-        m.addAction('oi', self.temp)
-        self.tbtn_teste.setMenu(m)
+        #m = QMenu(self)
+        #m.addAction('oi', self.temp)
+        #self.tbtn_teste.setMenu(m)
 
     def temp(self):
         print 'vim do menu!'
