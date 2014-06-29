@@ -1,0 +1,47 @@
+{
+    "meta": {
+        "name":"teste",
+        "description":"so um teste",
+        "date":"1234-12-12 12:12:12"
+    },
+    "packages":[
+        {
+            "name":"so28",
+            "wires":[
+                ["x1", "y1", "x2", "y2", "width", "layer"]
+            ],
+            "arcs":[],
+            "rectangles":[],
+            "pads":[
+                ["name", "x", "y", "drill", "type", "height", "width", "layer"]
+            ],
+            "vias":[]
+        }
+    ],
+    "symbols":[
+        {
+            "name":"pic123",
+            "wires":[
+                ["x1", "y1", "x2", "y2", "width", "layer"]
+            ],
+            "arcs":[],
+            "rectangles":[],
+            "pins":[
+                ["name", "x", "y", "type", "angle"]
+            ]
+        }
+    ],
+    "devices":[
+        {
+            "name":"pic123/p",
+            "prefix":"U",
+            "description":"oi",
+            "package":"so28",
+            "symbol":"pic123",
+            "connections":[
+                ["clk","0"],
+                ["rst","1"]
+            ]
+        }
+    ]
+}
