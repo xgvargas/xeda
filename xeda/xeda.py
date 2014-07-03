@@ -18,11 +18,6 @@ __version_info__ = ('0', '1', '0')
 __version__ = '.'.join(__version_info__)
 
 
-# import ctypes
-# myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
-# ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-
-
 class MyApplication(QtGui.QMainWindow, Ui_MainWindow, SmartSide):
     def __init__(self, parent=None):
         super(MyApplication, self).__init__(parent)

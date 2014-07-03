@@ -1,5 +1,8 @@
 *.py[cod]
 
+*_ui.py
+*_rc.py
+
 # C extensions
 *.so
 
