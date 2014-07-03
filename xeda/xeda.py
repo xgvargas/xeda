@@ -18,9 +18,9 @@ __version_info__ = ('0', '1', '0')
 __version__ = '.'.join(__version_info__)
 
 
-import ctypes
-myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+# import ctypes
+# myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
+# ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
 class MyApplication(QtGui.QMainWindow, Ui_MainWindow, SmartSide):
@@ -33,9 +33,9 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, SmartSide):
         self.restoreState(self.cfg.value('state'))
         #print 'lendo bunda:',self.cfg.value('bunda', type=int)
 
-        m = QMenu(self)
-        m.addAction('oi', self.temp)
-        self.tbtn_teste.setMenu(m)
+        # m = QMenu(self)
+        # m.addAction('oi', self.temp)
+        # self.tbtn_teste.setMenu(m)
 
     def temp(self):
         print 'vim do menu!'
@@ -56,6 +56,7 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, SmartSide):
         print 'foi'
 
 if __name__ == "__main__":
+    setAsApplication('xgvargas.xeda.1.1.1')
     app = QtGui.QApplication(sys.argv)
     window = MyApplication()
     window.show()
