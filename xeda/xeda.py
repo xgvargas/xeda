@@ -10,7 +10,7 @@ from PySide.QtGui import *
 from PySide.QtCore import *
 import sys
 from xeda_ui import *
-from smartside import *
+import smartside
 
 
 __author__ = 'Gustavo Vargas <xgvargas@gmail.com>'
@@ -18,19 +18,17 @@ __version_info__ = ('0', '1', '0')
 __version__ = '.'.join(__version_info__)
 
 
-import ctypes
-myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-
-
-class MyApplication(QtGui.QMainWindow, Ui_MainWindow, SmartSide):
+class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartside.SmartSide):
     def __init__(self, parent=None):
         super(MyApplication, self).__init__(parent)
         self.setupUi(self)
         self.auto_connect()
-        self.cfg = QSettings('oi', 'xeda')
-        self.restoreGeometry(self.cfg.value('geometry'))
-        self.restoreState(self.cfg.value('state'))
+
+        self.edt_console.setLocals({'app': self})
+
+        # self.cfg = QSettings('oi', 'xeda')
+        # self.restoreGeometry(self.cfg.value('geometry'))
+        # self.restoreState(self.cfg.value('state'))
         #print 'lendo bunda:',self.cfg.value('bunda', type=int)
 
         #m = QMenu(self)
@@ -41,9 +39,9 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, SmartSide):
         print 'vim do menu!'
 
     def closeEvent(self, event):
-        self.cfg.setValue('geometry', self.saveGeometry())
-        self.cfg.setValue('state', self.saveState())
-        self.cfg.setValue('bunda', 12)
+        # self.cfg.setValue('geometry', self.saveGeometry())
+        # self.cfg.setValue('state', self.saveState())
+        # self.cfg.setValue('bunda', 12)
         event.accept()
 
     def keyPressEvent(self, event): #this event don't need to be acepted
@@ -56,6 +54,7 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, SmartSide):
         print 'foi'
 
 if __name__ == "__main__":
+    smartside.setAsApplication('techin.xeda.v1.0.0')
     app = QtGui.QApplication(sys.argv)
     window = MyApplication()
     window.show()
