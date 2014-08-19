@@ -10,7 +10,7 @@ from PySide.QtGui import *
 from PySide.QtCore import *
 import sys
 from xeda_ui import *
-import smartside
+import smartside.signal
 
 
 __author__ = 'Gustavo Vargas <xgvargas@gmail.com>'
@@ -18,7 +18,7 @@ __version_info__ = ('0', '1', '0')
 __version__ = '.'.join(__version_info__)
 
 
-class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartside.SmartSide):
+class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartside.signal.SmartSignal):
     def __init__(self, parent=None):
         super(MyApplication, self).__init__(parent)
         self.setupUi(self)
@@ -31,9 +31,9 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartside.SmartSide):
         # self.restoreState(self.cfg.value('state'))
         #print 'lendo bunda:',self.cfg.value('bunda', type=int)
 
-        #m = QMenu(self)
-        #m.addAction('oi', self.temp)
-        #self.tbtn_teste.setMenu(m)
+        # m = QMenu(self)
+        # m.addAction('oi', self.temp)
+        # self.tbtn_teste.setMenu(m)
 
     def temp(self):
         print 'vim do menu!'

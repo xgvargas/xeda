@@ -315,7 +315,7 @@
   <customwidget>
    <class>ConsoleWdg</class>
    <extends>QPlainTextEdit</extends>
-   <header>smartside</header>
+   <header>smartside.console</header>
   </customwidget>
  </customwidgets>
  <resources/>
