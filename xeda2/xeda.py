@@ -10,7 +10,7 @@ import sys, os
 from xeda_ui import *   #this also imports QtGui and QtCore
 import smartside.signal as smartsignal
 from smartside import setAsApplication
-
+import pcbgraphicsview as bbb
 
 class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
     def __init__(self, parent=None):
@@ -18,14 +18,15 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
         self.setupUi(self)
 
         self.scene = QtGui.QGraphicsScene()
+        self.scene.setSceneRect(0, 0, 20000, 20000)
         self.gpv_pcb.setScene(self.scene)
         self.gpv_sch.setScene(self.scene)
-        self.gpv_pcb.scale(.2, .2)
 
         for x in xrange(0, 15000, 250):
             for y in xrange(0, 17000, 250):
-                self.scene.addRect(x-5, y-5, 10, 10, pen=QtGui.QPen(QtGui.QColor(255, 0, 0)),
-                                                 brush=QtGui.QBrush(QtGui.QColor(255, 128, 128)))
+                a = bbb.PCBViaItem()
+                a.setPos(x, y)
+                self.scene.addItem(a)
                 if x%1000 == 0 and y%1000 == 0:
                     a = self.scene.addSimpleText('({:d},{:d})'.format(x, y))
                     a.setPos(x, y)

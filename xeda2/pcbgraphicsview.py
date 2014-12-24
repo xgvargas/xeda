@@ -7,6 +7,18 @@ class BaseXedaView(QtGui.QGraphicsView):
     def __init__(self, *args, **kwargs):
         super(BaseXedaView, self).__init__(*args, **kwargs)
 
+        self.setCursor(QtCore.Qt.BlankCursor)
+        # self.unsetCursor()  #para mostrar o cursor denovo...
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setSceneRect(QtCore.QRectF(0.0, 0.0, 20000.0, 20000.0))
+        self.setRenderHints(QtGui.QPainter.Antialiasing|QtGui.QPainter.HighQualityAntialiasing|QtGui.QPainter.SmoothPixmapTransform|QtGui.QPainter.TextAntialiasing)
+        self.setCacheMode(QtGui.QGraphicsView.CacheBackground)
+        self.setTransformationAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
+        self.setResizeAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
+        self.setMouseTracking(True)
+        self.scale(.1, -.1)
+
         self.guide = QtGui.QColor(255, 255, 255)
         self.background = QtGui.QColor(0, 0, 0)
         self.grids = [(100, QtGui.QColor(64, 64, 64)), (1000, QtGui.QColor(255, 255, 255))]
@@ -69,6 +81,9 @@ class BaseXedaView(QtGui.QGraphicsView):
         super(BaseXedaView, self).mouseMoveEvent(event)
         self._mouse_pos = self.mapToScene(event.pos())
         self.scene().invalidate()
+        i = self.items(event.pos())
+        if i:
+            print i
         if self._pan_pos:
             p = event.pos()-self._pan_pos
             self._pan_pos = event.pos()
@@ -100,3 +115,18 @@ class SCHGraphicsView(BaseXedaView):
         self.guide = QtGui.QColor(0, 0, 0)
         self.background = QtGui.QColor(245, 239, 191)
         self.grids = [(100, QtGui.QColor(226, 223, 208)), (1000, QtGui.QColor(171, 169, 129))]
+
+
+class PCBViaItem(QtGui.QGraphicsItem):
+
+    def boundingRect(self):
+        do = 50
+        di = 28
+        return QtCore.QRectF(-do/2, -do/2, do, do)
+
+    def paint(self, painter, option, widget):
+        do = 50
+        di = 28
+        painter.setPen(QtGui.QPen(QtGui.QColor(200, 200, 200, 127), (do-di)/2))
+        r = do-(do-di)/2
+        painter.drawEllipse(QtCore.QRectF(-r/2, -r/2, r, r))
