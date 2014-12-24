@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="via">
+    <file>via.png</file>
+  </qresource>
+  <qresource prefix="base">
+    <file>xeda.ico</file>
+  </qresource>
+</RCC>

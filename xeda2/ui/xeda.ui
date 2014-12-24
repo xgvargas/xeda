@@ -7,11 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>718</width>
-    <height>474</height>
+    <height>436</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="xeda.qrc">
+    <normaloff>:/base/xeda.ico</normaloff>:/base/xeda.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -80,7 +84,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab_3">
         <attribute name="title">
@@ -98,11 +102,11 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidget_4">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
+   <property name="minimumSize">
+    <size>
+     <width>80</width>
+     <height>95</height>
+    </size>
    </property>
    <property name="allowedAreas">
     <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
@@ -114,28 +118,12 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_4">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <property name="spacing">
-      <number>0</number>
-     </property>
+    <layout class="QGridLayout" name="gridLayout">
      <property name="margin">
       <number>0</number>
      </property>
-     <item>
-      <widget class="QPlainTextEdit" name="plainTextEdit_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>100</height>
-        </size>
-       </property>
-      </widget>
+     <item row="0" column="0">
+      <widget class="ConsoleWdg" name="edt_console"/>
      </item>
     </layout>
    </widget>
@@ -152,7 +140,14 @@
    <extends>QGraphicsView</extends>
    <header>pcbgraphicsview</header>
   </customwidget>
+  <customwidget>
+   <class>ConsoleWdg</class>
+   <extends>QPlainTextEdit</extends>
+   <header location="global">smartside.console</header>
+  </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="xeda.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -17,6 +17,8 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
         super(MyApplication, self).__init__(parent)
         self.setupUi(self)
 
+        self.edt_console.setLocals({'app': self})
+
         self.scene = QtGui.QGraphicsScene()
         self.scene.setSceneRect(0, 0, 20000, 20000)
         self.gpv_pcb.setScene(self.scene)
@@ -30,6 +32,7 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
                 if x%1000 == 0 and y%1000 == 0:
                     a = self.scene.addSimpleText('({:d},{:d})'.format(x, y))
                     a.setPos(x, y)
+                    a.scale(1, -1)
                     a.setFont(QtGui.QFont("Times", 50, QtGui.QFont.Bold))
                     a.setBrush(QtGui.QBrush(QtGui.QColor(0, 255, 0)))
 
@@ -52,7 +55,7 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
 
 app = QtGui.QApplication(sys.argv)
 window = MyApplication()
-# setAsApplication('vossloh.ucd.'+__version__)
+setAsApplication('techin.xeda.'+__version__)
 window.show()
 # window.print_all_signals()
 ret = app.exec_()

@@ -57,7 +57,7 @@ class BaseXedaView(QtGui.QGraphicsView):
         d = event.delta()
 
         if event.orientation() == QtCore.Qt.Orientation.Vertical:
-            factor = 1.15
+            factor = 1.25
 
             s = self.transform().m11()
             if d > 0:  #in
@@ -83,7 +83,7 @@ class BaseXedaView(QtGui.QGraphicsView):
         self.scene().invalidate()
         i = self.items(event.pos())
         if i:
-            print i
+            pass
         if self._pan_pos:
             p = event.pos()-self._pan_pos
             self._pan_pos = event.pos()
@@ -104,6 +104,13 @@ class BaseXedaView(QtGui.QGraphicsView):
         else:
             event.ignore()
 
+    def mouseDoubleClickEvent(self, event):
+        i = self.items(event.pos())
+        if i:
+            if isinstance(i[0], BaseXedaItem):
+                i[0].inspect()
+
+
 class PCBGraphicsView(BaseXedaView):
     pass
 
@@ -117,7 +124,48 @@ class SCHGraphicsView(BaseXedaView):
         self.grids = [(100, QtGui.QColor(226, 223, 208)), (1000, QtGui.QColor(171, 169, 129))]
 
 
-class PCBViaItem(QtGui.QGraphicsItem):
+class BaseXedaItem(QtGui.QGraphicsItem):
+
+    def __init__(self):
+        super(BaseXedaItem, self).__init__()
+
+    def boundingRect(self):
+        raise NotImplementedError()
+
+    def paint(self, painter, option, widget):
+        raise NotImplementedError()
+
+    def inspect(self):
+        raise NotImplementedError()
+
+    def load(self, data):
+        pass
+
+    def save(self):
+        pass
+
+    def togerber(self):
+        pass
+
+from ins_via_ui import *
+
+class PCBViaInspector(QtGui.QDialog, Ui_dlg_via):
+    def __init__(self, parent=None):
+        super(PCBViaInspector, self).__init__(parent)
+        self.setupUi(self)
+        # self.setFixedSize(self.size())
+
+    @staticmethod
+    def inspect(parent=None):
+        dialog = PCBViaInspector(parent)
+        result = dialog.exec_()
+        return (result == QtGui.QDialog.Accepted)
+
+
+class PCBViaItem(BaseXedaItem):
+
+    def __init__(self):
+        super(PCBViaItem, self).__init__()
 
     def boundingRect(self):
         do = 50
@@ -130,3 +178,6 @@ class PCBViaItem(QtGui.QGraphicsItem):
         painter.setPen(QtGui.QPen(QtGui.QColor(200, 200, 200, 127), (do-di)/2))
         r = do-(do-di)/2
         painter.drawEllipse(QtCore.QRectF(-r/2, -r/2, r, r))
+
+    def inspect(self):
+        PCBViaInspector.inspect()
