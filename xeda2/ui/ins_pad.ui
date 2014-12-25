@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>287</width>
-    <height>476</height>
+    <height>485</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -252,9 +252,6 @@
        <item row="7" column="1">
         <widget class="QLineEdit" name="lineEdit_12"/>
        </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEdit_14"/>
-       </item>
        <item row="9" column="1">
         <widget class="QCheckBox" name="checkBox_2">
          <property name="text">
@@ -305,9 +302,19 @@
          </property>
         </widget>
        </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="sel_net"/>
+       </item>
       </layout>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line_5">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -332,7 +339,6 @@
   <tabstop>comboBox</tabstop>
   <tabstop>lineEdit_11</tabstop>
   <tabstop>lineEdit_10</tabstop>
-  <tabstop>lineEdit_14</tabstop>
   <tabstop>lineEdit_3</tabstop>
   <tabstop>lineEdit_6</tabstop>
   <tabstop>lineEdit_9</tabstop>

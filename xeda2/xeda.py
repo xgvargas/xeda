@@ -17,7 +17,7 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
         super(MyApplication, self).__init__(parent)
         self.setupUi(self)
 
-        self.edt_console.setLocals({'app': self})
+        # self.edt_console.setLocals({'app': self})
 
         self.scene = QtGui.QGraphicsScene()
         self.scene.setSceneRect(0, 0, 20000, 20000)
@@ -46,8 +46,14 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
                            pen=QtGui.QPen(QtGui.QColor(255, 128, 128, 127), 200,
                                           QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
 
+        self.auto_connect()
+
+
     def closeEvent(self, event):
         pass
+
+    def _on_action_Console__triggered(self):
+        self.dock_console.show()
 
 
 ######################################################################

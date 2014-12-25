@@ -129,6 +129,8 @@ class BaseXedaItem(QtGui.QGraphicsItem):
     def __init__(self):
         super(BaseXedaItem, self).__init__()
 
+        self._x_selected = False
+
     def boundingRect(self):
         raise NotImplementedError()
 
@@ -138,46 +140,150 @@ class BaseXedaItem(QtGui.QGraphicsItem):
     def inspect(self):
         raise NotImplementedError()
 
-    def load(self, data):
-        pass
+    def pack(self):
+        d = {}
+        for m in dir(self):
+            if m.startswith('_x_'):
+                d[m[3:]] = getattr(self, m)
+        d['x'] = self.x()
+        d['y'] = self.y()
+        return d
 
-    def save(self):
-        pass
+    def unpack(self, data):
+        self.setPos(data['x'], data['y'])
+        del data['x']
+        del data['y']
+        for k, v in data.items():
+            setattr(self, '_x_'+k, v)
+        # self.invalidate()
 
-    def togerber(self):
-        pass
+    def toGerber(self):
+        raise NotImplementedError()
+
+    # def setPos(self, x, y):
+    #     super(BaseXedaItem, self).setPos(x, y)
+    #     self._x_x = x
+    #     self._x_y = y
+
 
 from ins_via_ui import *
 
-class PCBViaInspector(QtGui.QDialog, Ui_dlg_via):
-    def __init__(self, parent=None):
+
+class BaseXedaInspector(QtGui.QDialog):
+
+    def getbyname(self, name):
+        o = getattr(self, name, None)
+        if o:
+            if isinstance(o, QtGui.QWidget):
+                return o
+        return None
+
+    def _toBase(self, val):
+        if val.endswith('mil'):
+            return int(val[:-3])
+        if val.endswith('mm'):
+            return int(float(val[:-2])*39.27)
+
+    def _fromBase(self, val, dest='mil'):
+        if val is None:
+            return ''
+        if dest == 'mil':
+            return str(int(val))+'mil'
+        if dest == 'mm':
+            return str(val/39.37)+'mm'
+        return '---'
+
+    def populate(self, data):
+        print data
+        self._data = data
+        for t, f, ui in self._UI_XO:
+            print ui, f, data[f]
+            if t == 1: #absolute position
+                self.getbyname(ui).setText(self._fromBase(data[f]))
+            elif t == 2: #mm or mil dim
+                self.getbyname(ui).setText(self._fromBase(data[f]))
+            elif t == 3: #boolean
+                self.getbyname(ui).setChecked(data[f])
+            elif t == 4: #net
+                pass
+            elif t == 5: #layer
+                pass
+            elif t == 6: #
+                pass
+
+    def dump(self):
+        for t, f, ui in self._UI_XO:
+            if t == 1: #absolute position
+                self._data[f] = self._toBase(self.getbyname(ui).text())
+            elif t == 2: #mm or mil dim
+                self._data[f] = self._toBase(self.getbyname(ui).text())
+            elif t == 3: #boolean
+                self._data[f] = self.getbyname(ui).isChecked()
+            elif t == 4: #net
+                pass
+            elif t == 5: #layer
+                pass
+            elif t == 6: #
+                pass
+        print self._data
+        return self._data
+
+
+
+class PCBViaInspector(BaseXedaInspector, Ui_dlg_via):
+
+    _UI_XO = (
+        (2, 'od', 'edt_od'),
+        (2, 'id', 'edt_id'),
+        (3, 'plated', 'chk_plated'),
+        (4, 'net', 'sel_net'),
+        (5, 'start', 'sel_start'),
+        (5, 'end', 'sel_end'),
+        (3, 'tent', 'chk_tent'),
+        (2, 'mask', 'edt_mask'),
+        (1, 'x', 'edt_x'),
+        (1, 'y', 'edt_y')
+        )
+
+    def __init__(self, data, parent=None):
         super(PCBViaInspector, self).__init__(parent)
         self.setupUi(self)
         # self.setFixedSize(self.size())
 
+        self.populate(data)
+
     @staticmethod
-    def inspect(parent=None):
-        dialog = PCBViaInspector(parent)
+    def inspect(data, parent=None):
+        dialog = PCBViaInspector(data, parent)
         result = dialog.exec_()
-        return (result == QtGui.QDialog.Accepted)
+        return (result == QtGui.QDialog.Accepted), dialog.dump()
 
 
 class PCBViaItem(BaseXedaItem):
 
+    _x_name = 'VIA'
+
     def __init__(self):
         super(PCBViaItem, self).__init__()
 
+        self._x_od = 50
+        self._x_id = 28
+        self._x_plated = False
+        self._x_net = None
+        self._x_start = 1
+        self._x_end = 16
+        self._x_tent = False
+        self._x_mask = None
+
     def boundingRect(self):
-        do = 50
-        di = 28
-        return QtCore.QRectF(-do/2, -do/2, do, do)
+        return QtCore.QRectF(-self._x_od/2, -self._x_od/2, self._x_od, self._x_od)
 
     def paint(self, painter, option, widget):
-        do = 50
-        di = 28
-        painter.setPen(QtGui.QPen(QtGui.QColor(200, 200, 200, 127), (do-di)/2))
-        r = do-(do-di)/2
+        painter.setPen(QtGui.QPen(QtGui.QColor(200, 200, 200, 127), (self._x_od-self._x_id)/2))
+        r = self._x_od-(self._x_od-self._x_id)/2
         painter.drawEllipse(QtCore.QRectF(-r/2, -r/2, r, r))
 
     def inspect(self):
-        PCBViaInspector.inspect()
+        ok, data = PCBViaInspector.inspect(self.pack())
+        if ok:
+            self.unpack(data)

@@ -84,7 +84,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tab_3">
         <attribute name="title">
@@ -101,12 +101,15 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_4">
+  <widget class="QDockWidget" name="dock_console">
    <property name="minimumSize">
     <size>
-     <width>80</width>
+     <width>93</width>
      <height>95</height>
     </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="allowedAreas">
     <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
@@ -123,11 +126,59 @@
       <number>0</number>
      </property>
      <item row="0" column="0">
-      <widget class="ConsoleWdg" name="edt_console"/>
+      <widget class="QPlainTextEdit" name="edt_console"/>
      </item>
     </layout>
    </widget>
   </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>718</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <widget class="QMenu" name="menu_Tools">
+     <property name="title">
+      <string>&amp;Tools</string>
+     </property>
+     <addaction name="action_Console"/>
+    </widget>
+    <addaction name="menu_Tools"/>
+   </widget>
+   <addaction name="menu_View"/>
+  </widget>
+  <widget class="QToolBar" name="tool_views">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Console"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_Console">
+   <property name="icon">
+    <iconset resource="xeda.qrc">
+     <normaloff>:/via/via.png</normaloff>:/via/via.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Console</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Console</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -139,11 +190,6 @@
    <class>SCHGraphicsView</class>
    <extends>QGraphicsView</extends>
    <header>pcbgraphicsview</header>
-  </customwidget>
-  <customwidget>
-   <class>ConsoleWdg</class>
-   <extends>QPlainTextEdit</extends>
-   <header location="global">smartside.console</header>
   </customwidget>
  </customwidgets>
  <resources>

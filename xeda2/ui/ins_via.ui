@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>200</width>
-    <height>424</height>
+    <height>433</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -49,7 +49,7 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEdit"/>
+      <widget class="QLineEdit" name="edt_od"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_2">
@@ -59,17 +59,17 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_2"/>
+      <widget class="QLineEdit" name="edt_id"/>
      </item>
      <item row="2" column="1">
-      <widget class="QCheckBox" name="checkBox">
+      <widget class="QCheckBox" name="chk_plated">
        <property name="text">
         <string>Plated</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QCheckBox" name="checkBox_2">
+      <widget class="QCheckBox" name="chk_tent">
        <property name="text">
         <string>Tenting</string>
        </property>
@@ -83,7 +83,7 @@
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="lineEdit_6"/>
+      <widget class="QLineEdit" name="edt_mask"/>
      </item>
      <item row="5" column="0">
       <widget class="QLabel" name="label_3">
@@ -91,9 +91,6 @@
         <string>Net:</string>
        </property>
       </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="lineEdit_3"/>
      </item>
      <item row="6" column="0">
       <widget class="QLabel" name="label_4">
@@ -103,7 +100,7 @@
       </widget>
      </item>
      <item row="6" column="1">
-      <widget class="QLineEdit" name="lineEdit_4"/>
+      <widget class="QLineEdit" name="edt_x"/>
      </item>
      <item row="7" column="0">
       <widget class="QLabel" name="label_5">
@@ -113,7 +110,7 @@
       </widget>
      </item>
      <item row="7" column="1">
-      <widget class="QLineEdit" name="lineEdit_5"/>
+      <widget class="QLineEdit" name="edt_y"/>
      </item>
      <item row="8" column="0">
       <widget class="QLabel" name="label_6">
@@ -123,7 +120,7 @@
       </widget>
      </item>
      <item row="8" column="1">
-      <widget class="QComboBox" name="comboBox"/>
+      <widget class="QComboBox" name="sel_start"/>
      </item>
      <item row="9" column="0">
       <widget class="QLabel" name="label_7">
@@ -133,9 +130,19 @@
       </widget>
      </item>
      <item row="9" column="1">
-      <widget class="QComboBox" name="comboBox_2"/>
+      <widget class="QComboBox" name="sel_end"/>
+     </item>
+     <item row="5" column="1">
+      <widget class="QComboBox" name="sel_net"/>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -147,20 +154,52 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>edt_od</tabstop>
+  <tabstop>edt_id</tabstop>
+  <tabstop>chk_plated</tabstop>
+  <tabstop>chk_tent</tabstop>
+  <tabstop>edt_mask</tabstop>
+  <tabstop>edt_x</tabstop>
+  <tabstop>edt_y</tabstop>
+  <tabstop>sel_start</tabstop>
+  <tabstop>sel_end</tabstop>
   <tabstop>buttonBox</tabstop>
-  <tabstop>lineEdit</tabstop>
-  <tabstop>lineEdit_2</tabstop>
-  <tabstop>checkBox</tabstop>
-  <tabstop>checkBox_2</tabstop>
-  <tabstop>lineEdit_6</tabstop>
-  <tabstop>lineEdit_3</tabstop>
-  <tabstop>lineEdit_4</tabstop>
-  <tabstop>lineEdit_5</tabstop>
-  <tabstop>comboBox</tabstop>
-  <tabstop>comboBox_2</tabstop>
  </tabstops>
  <resources>
   <include location="xeda.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>dlg_via</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>27</x>
+     <y>410</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>18</x>
+     <y>309</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>dlg_via</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>11</x>
+     <y>417</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>13</x>
+     <y>258</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
