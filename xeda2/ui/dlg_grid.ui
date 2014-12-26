@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>dlg_grid</class>
+ <widget class="QDialog" name="dlg_grid">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>421</width>
+    <height>162</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Grids and Snaps</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string>Snap</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Components:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="sel_snap_all">
+            <property name="currentIndex">
+             <number>3</number>
+            </property>
+            <property name="maxVisibleItems">
+             <number>15</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>No snap</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Custom</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>25mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>50mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>100mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>250mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>500mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1000mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2.5mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10mm</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="sel_snap_comp">
+            <property name="currentIndex">
+             <number>3</number>
+            </property>
+            <property name="maxVisibleItems">
+             <number>15</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>No snap</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Custom</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>20mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>25mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>50mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>100mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>250mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>500mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1000mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2.5mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10mm</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>All others:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLineEdit" name="edt_snap_comp">
+            <property name="maximumSize">
+             <size>
+              <width>66</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLineEdit" name="edt_snap_all">
+            <property name="maximumSize">
+             <size>
+              <width>66</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chk_movetogrid">
+          <property name="text">
+           <string>Move to grid</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Grid</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Grid 1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="sel_grid2">
+            <property name="currentIndex">
+             <number>8</number>
+            </property>
+            <property name="maxVisibleItems">
+             <number>15</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Custom</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>25mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>50mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>100mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>250mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>500mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1000mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2.5mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10mm</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="sel_grid1">
+            <property name="currentIndex">
+             <number>5</number>
+            </property>
+            <property name="maxVisibleItems">
+             <number>15</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Custom</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>25mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>50mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>100mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>250mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>500mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1000mil</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2.5mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5mm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10mm</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Grid 2:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLineEdit" name="edt_grid1">
+            <property name="maximumSize">
+             <size>
+              <width>66</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLineEdit" name="edt_grid2">
+            <property name="maximumSize">
+             <size>
+              <width>66</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>sel_snap_comp</tabstop>
+  <tabstop>edt_snap_comp</tabstop>
+  <tabstop>sel_snap_all</tabstop>
+  <tabstop>edt_snap_all</tabstop>
+  <tabstop>chk_movetogrid</tabstop>
+  <tabstop>sel_grid1</tabstop>
+  <tabstop>edt_grid1</tabstop>
+  <tabstop>sel_grid2</tabstop>
+  <tabstop>edt_grid2</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>dlg_grid</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>24</x>
+     <y>143</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>2</x>
+     <y>130</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

@@ -110,6 +110,9 @@ class BaseXedaView(QtGui.QGraphicsView):
             if isinstance(i[0], BaseXedaItem):
                 i[0].inspect()
 
+    def keyPressEvent(self, event):
+        print event.key(), event.modifiers(), event.type()
+
 
 class PCBGraphicsView(BaseXedaView):
     pass
@@ -169,7 +172,6 @@ class BaseXedaItem(QtGui.QGraphicsItem):
     #     self._x_y = y
 
 
-from ins_via_ui import *
 
 
 class BaseXedaInspector(QtGui.QDialog):
@@ -232,6 +234,8 @@ class BaseXedaInspector(QtGui.QDialog):
         return self._data
 
 
+
+from ins_via_ui import *
 
 class PCBViaInspector(BaseXedaInspector, Ui_dlg_via):
 
