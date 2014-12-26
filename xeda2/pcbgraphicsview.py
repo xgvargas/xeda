@@ -129,6 +129,9 @@ class BaseXedaItem(QtGui.QGraphicsItem):
     def __init__(self):
         super(BaseXedaItem, self).__init__()
 
+        self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True)
+
         self._x_selected = False
 
     def boundingRect(self):

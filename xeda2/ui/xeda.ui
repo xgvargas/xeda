@@ -39,7 +39,11 @@
          <number>1</number>
         </property>
         <item>
-         <widget class="PCBGraphicsView" name="gpv_pcb"/>
+         <widget class="PCBGraphicsView" name="gpv_pcb">
+          <property name="dragMode">
+           <enum>QGraphicsView::RubberBandDrag</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
