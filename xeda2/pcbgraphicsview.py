@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from PySide import QtCore, QtGui
+import re
+
 
 class BaseXedaView(QtGui.QGraphicsView):
 
@@ -184,19 +186,24 @@ class BaseXedaInspector(QtGui.QDialog):
         return None
 
     def _toBase(self, val):
-        if val.endswith('mil'):
-            return int(val[:-3])
-        if val.endswith('mm'):
-            return int(float(val[:-2])*39.27)
+        g = re.match(r'^\s*([+-]?\d+[,.]?\d*|[+-]?[.,]\d+)\s*(mm|in|mils?|cm)?\s*$', val)
+        if g:
+            v = float(g.group(1))
+            unit = g.group(2)
+            if unit == 'mil' or unit == 'mils': return int(v)
+            if unit == 'in': return int(v*1000.0)
+            if unit == 'mm': return int(v*39.37)
+            if unit == 'cm': return int(v*393.7)
+            return 0
 
     def _fromBase(self, val, dest='mil'):
-        if val is None:
-            return ''
-        if dest == 'mil':
-            return str(int(val))+'mil'
-        if dest == 'mm':
-            return str(val/39.37)+'mm'
-        return '---'
+        if val:
+            v = float(val)
+            if dest == 'mil' or dest == 'mils': return '{:.0f} mil'.format(v)
+            if dest == 'in': return '{:.0f} in'.format(v/1000.0)
+            if dest == 'mm': return '{:.3f} mm'.format(v/39.37)
+            if dest == 'cm': return '{:.3f} cm'.format(v/393.7)
+        return ''
 
     def populate(self, data):
         print data
