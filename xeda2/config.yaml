@@ -1,0 +1,31 @@
+---
+
+units: mm
+
+pcbcolors:
+	back: [0, 0, 0]
+	grid1: [64, 64, 64]
+	grid2: [222, 222, 222]
+	guide: [255, 255, 255]
+	layer:
+		top: [200, 0, 0, 127]
+		bottom: [0, 0, 200, 127]
+		edge:
+
+schcolors:
+	back: [245, 239, 191]
+	grid1: [226, 223, 208]
+	grid2: [171, 169, 129]
+	guide: [0, 0, 0]
+	item:
+		wire:
+		junction:
+		bus:
+		busnentry:
+		pin:
+		text:
+		net:
+		port:
+		art:
+
+...

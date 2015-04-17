@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>287</width>
+    <width>305</width>
     <height>485</height>
    </rect>
   </property>
@@ -51,7 +51,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_2"/>
+        <widget class="DimEdit" name="lineEdit_2"/>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_2">
@@ -61,7 +61,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEdit"/>
+        <widget class="DimEdit" name="lineEdit"/>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_3">
@@ -115,7 +115,7 @@
         </widget>
        </item>
        <item row="6" column="1">
-        <widget class="QLineEdit" name="lineEdit_4"/>
+        <widget class="DimEdit" name="lineEdit_4"/>
        </item>
        <item row="7" column="0">
         <widget class="QLabel" name="label_5">
@@ -125,7 +125,7 @@
         </widget>
        </item>
        <item row="7" column="1">
-        <widget class="QLineEdit" name="lineEdit_5"/>
+        <widget class="DimEdit" name="lineEdit_5"/>
        </item>
        <item row="8" column="0">
         <widget class="QLabel" name="label_7">
@@ -152,7 +152,7 @@
         </widget>
        </item>
        <item row="10" column="1">
-        <widget class="QLineEdit" name="lineEdit_7"/>
+        <widget class="DimEdit" name="lineEdit_7"/>
        </item>
        <item row="11" column="0">
         <widget class="QLabel" name="label_6">
@@ -162,7 +162,7 @@
         </widget>
        </item>
        <item row="11" column="1">
-        <widget class="QLineEdit" name="lineEdit_8"/>
+        <widget class="DimEdit" name="lineEdit_8"/>
        </item>
        <item row="12" column="0">
         <widget class="QLabel" name="label_9">
@@ -216,10 +216,10 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEdit_10"/>
+        <widget class="DimEdit" name="lineEdit_10"/>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_11"/>
+        <widget class="DimEdit" name="lineEdit_11"/>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_13">
@@ -250,7 +250,7 @@
         </widget>
        </item>
        <item row="7" column="1">
-        <widget class="QLineEdit" name="lineEdit_12"/>
+        <widget class="DimEdit" name="lineEdit_12"/>
        </item>
        <item row="9" column="1">
         <widget class="QCheckBox" name="checkBox_2">
@@ -266,7 +266,7 @@
         <widget class="QLineEdit" name="lineEdit_6"/>
        </item>
        <item row="5" column="1">
-        <widget class="QLineEdit" name="lineEdit_9"/>
+        <widget class="DimEdit" name="lineEdit_9"/>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_18">
@@ -293,7 +293,7 @@
         <widget class="QComboBox" name="comboBox_4"/>
        </item>
        <item row="10" column="1">
-        <widget class="QLineEdit" name="lineEdit_13"/>
+        <widget class="DimEdit" name="lineEdit_13"/>
        </item>
        <item row="10" column="0">
         <widget class="QLabel" name="label_21">
@@ -325,6 +325,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DimEdit</class>
+   <extends>QLineEdit</extends>
+   <header>dimedit</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>buttonBox</tabstop>
   <tabstop>lineEdit_2</tabstop>

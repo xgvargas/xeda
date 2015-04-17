@@ -49,7 +49,7 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="edt_od"/>
+      <widget class="DimEdit" name="edt_od"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_2">
@@ -59,7 +59,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="edt_id"/>
+      <widget class="DimEdit" name="edt_id"/>
      </item>
      <item row="2" column="1">
       <widget class="QCheckBox" name="chk_plated">
@@ -83,7 +83,7 @@
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="edt_mask"/>
+      <widget class="DimEdit" name="edt_mask"/>
      </item>
      <item row="5" column="0">
       <widget class="QLabel" name="label_3">
@@ -100,7 +100,7 @@
       </widget>
      </item>
      <item row="6" column="1">
-      <widget class="QLineEdit" name="edt_x"/>
+      <widget class="DimEdit" name="edt_x"/>
      </item>
      <item row="7" column="0">
       <widget class="QLabel" name="label_5">
@@ -110,7 +110,7 @@
       </widget>
      </item>
      <item row="7" column="1">
-      <widget class="QLineEdit" name="edt_y"/>
+      <widget class="DimEdit" name="edt_y"/>
      </item>
      <item row="8" column="0">
       <widget class="QLabel" name="label_6">
@@ -153,6 +153,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DimEdit</class>
+   <extends>QLineEdit</extends>
+   <header>dimedit</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>edt_od</tabstop>
   <tabstop>edt_id</tabstop>
