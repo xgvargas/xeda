@@ -8,9 +8,11 @@ projects:
 
 pcb:
     grid1: 100
-    grid2: 250
+    grid2: 1000
+    weakgrid: true
+
     snap: 20
-    dim: [10000, 10000]
+    dim: [20000, 20000]
     libs:
         - path1
         - path2
@@ -45,12 +47,14 @@ pcb:
             aux5:
     shortcuts:
         grid: G
-        text: PS
-        pad: PP
-        via: PV
-        line: PL
-        arc: PR
-        area: PA
+        place:
+            - P
+            - text: S
+              pad: P
+              via: V
+              line: L
+              arc: R
+              area: A
         trace: T
         delete: Del
         clearsel: X
@@ -60,15 +64,20 @@ pcb:
         layer: L
 
 sch:
-    grid: 100
+    grid1: 0
+    grid2: 500
+    weakgrid: false
+
+    dim: [20000, 20000]
+
     snap: 100
     libs:
         - path1
         - path2
     colors:
         back: [245, 239, 191]
-        grid1: [226, 223, 208]
-        grid2: [171, 169, 129]
+        grid1: [80, 80, 208]
+        grid2: [171, 80, 60]
         guide: [0, 0, 0]
         item:
             wire:
@@ -82,11 +91,13 @@ sch:
             art:
     shortcuts:
         grid: G
-        part: PP
-        power: PO
-        text: PS
-        line: PL
-        arc: PR
+        place:
+            - P
+            - part: P
+              power: O
+              text: S
+              line: L
+              arc: R
         trace: T
         junction: J
         delete: DEL

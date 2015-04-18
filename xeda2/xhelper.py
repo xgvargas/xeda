@@ -17,8 +17,8 @@ def readYamlConfig(filename):
                     setattr(self, a, [Dict2Obj(x, False) if isinstance(x, dict) else x for x in b])
                 else:
                     setattr(self, a, Dict2Obj(b, False) if isinstance(b, dict) else b)
-                if first:
-                    setattr(self, '_d', d)
+                # if first:
+                setattr(self, '_d', d)
 
     with open(filename, 'r') as fh:
         cfg = Dict2Obj(yaml.load(fh.read()))

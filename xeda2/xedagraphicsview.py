@@ -13,9 +13,8 @@ class XedaGraphicsView(QtGui.QGraphicsView):
         # self.unsetCursor()  #para mostrar o cursor denovo...
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.setSceneRect(QtCore.QRectF(0.0, 0.0, 20000.0, 20000.0))
         self.setRenderHints(QtGui.QPainter.Antialiasing|QtGui.QPainter.HighQualityAntialiasing|QtGui.QPainter.SmoothPixmapTransform|QtGui.QPainter.TextAntialiasing)
-        self.setCacheMode(QtGui.QGraphicsView.CacheBackground)
+        # self.setCacheMode(QtGui.QGraphicsView.CacheBackground)
         self.setTransformationAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
         self.setMouseTracking(True)
@@ -26,8 +25,33 @@ class XedaGraphicsView(QtGui.QGraphicsView):
         self._pan_pos = None
         self._mouse_pos = QtCore.QPointF(0, 0)
 
+    def setScene(self, scene):
+        super(XedaGraphicsView, self).setScene(scene)
+        # self.setSceneRect(QtCore.QRectF(0.0, 0.0, 20000.0, 20000.0))
+        scene.setSceneRect(0, 0, scene.cfg.dim[0], scene.cfg.dim[1])
+        self.setSceneRect(0, 0, scene.cfg.dim[0], scene.cfg.dim[1])
+
     def drawBackground(self, paint, rect):
-        paint.drawPixmap(0, 0, self.scene().renderStatic())
+
+            paint.fillRect(rect, QtGui.QColor(*self.scene().cfg.colors.back))
+
+            def doGrid(color, size):
+                s = self.transform().m11()
+                if size*s < 5: return     #grid is too small, so ignore it
+
+                left = int(rect.left()-(rect.left()%size))
+                top = int(rect.top()-(rect.top()%size))
+                lines = []
+                for x in xrange(left, int(rect.right()), size):
+                    lines.append(QtCore.QLineF(x, rect.top(), x, rect.bottom()))
+                for y in xrange(top, int(rect.bottom()), size):
+                    lines.append(QtCore.QLineF(rect.left(), y, rect.right(), y))
+
+                paint.setPen(QtGui.QPen(QtGui.QColor(*color), int(self.scene().cfg.weakgrid)))
+                paint.drawLines(lines)
+
+            if self.scene().cfg.grid1: doGrid(self.scene().cfg.colors.grid1, self.scene().cfg.grid1)
+            if self.scene().cfg.grid2: doGrid(self.scene().cfg.colors.grid2, self.scene().cfg.grid2)
 
     def drawForeground(self, paint, rect):
         paint.setPen(QtGui.QPen(self.guide))
@@ -92,7 +116,47 @@ class XedaGraphicsView(QtGui.QGraphicsView):
                 i[0].inspect()
 
     def keyPressEvent(self, event):
-        print event.key(), event.modifiers(), event.type()
+        print event.text(), event.key(), event.modifiers(), event.type()
+
+        for f, k in self.scene().cfg.shortcuts._d.iteritems():
+            if isinstance(k, (list, tuple)):
+                k = k[0]
+            if k == event.text().upper():
+                self.scene().processShortcut(f)
+
+
+
+
+
+from dlg_grid_ui import *
+import smartside.signal as smartsignal
+
+
+class GridDialog(QtGui.QDialog, Ui_dlg_grid, smartsignal.SmartSignal):
+
+    def __init__(self, data, parent=None):
+        super(GridDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.auto_connect()
+
+    def _on_edt_snap_comp__textChanged(self):
+        self.sel_snap_comp.setCurrentIndex(1)
+    def _on_edt_snap_all__textChanged(self):
+        self.sel_snap_all.setCurrentIndex(1)
+    def _on_edt_grid1__textChanged(self):
+        self.sel_grid1.setCurrentIndex(1)
+    def _on_edt_grid2__textChanged(self):
+        self.sel_grid2.setCurrentIndex(1)
+
+    @staticmethod
+    def execute(data, parent=None):
+        dialog = GridDialog(data, parent)
+        result = dialog.exec_()
+        return (result == QtGui.QDialog.Accepted), dialog.dump()
+
+
+
+
 
 
 
@@ -110,60 +174,31 @@ class BaseXedaScene(QtGui.QGraphicsScene):
 
         self.cfg = config
 
-        self.staticScene = QtGui.QGraphicsScene()
+        self.procNames = {
+            'grid': self.setGrid,
+            'clearsel': self.clearSelection,
+            'setorigin': self.setOrigin,
+            'resetorigin': self.resetOrigin,
+            # 'rotate': self.
+            # 'delete': self.
+            }
 
-        self.staticImage = None
+    def processShortcut(self, name):
+        print name
+        if name in self.procNames:
+            self.procNames[name](shortcut=True)
 
-    def renderStatic(self):
-        if self.staticImage:
-            pass
+    def setGrid(self, **kwargs):
+        ok, grid = GridDialog.execute(self)
+        if ok:
+            print 1
 
-        else:
-            self.staticImage = QtGui.QPixmap(self.cfg.dim[0], self.cfg.dim[1])
-            # self.staticImage = QtGui.QPixmap(20000,10000)
-            qp = QtGui.QPainter(self.staticImage)
-
-            qp.fillRect(0, 0, self.cfg.dim[0], self.cfg.dim[1], QtGui.QColor(*self.cfg.colors.back))
-
-            qp.drawLine(0, 0, self.cfg.dim[0], self.cfg.dim[1])
-
-            def doGrid(color, size):
-                # s = self.transform().m11()
-                # if size*s < 5: return     #grid is too small, so ignore it
-
-                # left = int(rect.left()-(rect.left()%size))
-                # top = int(rect.top()-(rect.top()%size))
-                # lines = []
-                # for x in xrange(left, int(rect.right()), size):
-                #     lines.append(QtCore.QLineF(x, rect.top(), x, rect.bottom()))
-                # for y in xrange(top, int(rect.bottom()), size):
-                #     lines.append(QtCore.QLineF(rect.left(), y, rect.right(), y))
-                lines = []
-                for x in xrange(0, self.cfg.dim[0], size):
-                    lines.append(QtCore.QLineF(x, 0, x, self.cfg.dim[1]))
-                for y in xrange(0, self.cfg.dim[1], size):
-                    lines.append(QtCore.QLineF(0, y, self.cfg.dim[0], y))
-
-                qp.setPen(QtGui.QPen(QtGui.QColor(*color), 1))
-                qp.drawLines(lines)
-
-            if self.cfg.grid1:
-                doGrid(self.cfg.colors.grid1, self.cfg.grid1)
-
-            # if self.cfg.grid2:
-            #     doGrid(self.cfg.colors.grid2, self.cfg.grid2)
-
-        return self.staticImage
-
-
-    # def setGrid(self):
-    #     print 'setGrid'
-    # def setOrigin(self, pos):
-    #     print 'setOrigin'
-    # def resetOrigin(self):
-    #     print 'resetOrigin'
-    # def clearSelection(self):
-    #     print 'clearSelection'
+    def setOrigin(self, **kwargs):
+        print 'setOrigin'
+    def resetOrigin(self, **kwargs):
+        print 'resetOrigin'
+    def clearSelection(self, **kwargs):
+        print 'clearSelection'
     # def removeItem(self, item):
     #     print 'removeItem'
     # def rotateItem(self, item):
@@ -181,6 +216,20 @@ class PCBScene(BaseXedaScene):
 
     def __init__(self, *args, **kwargs):
         super(PCBScene, self).__init__(*args, **kwargs)
+
+        self.procNames.update({
+            # 'text': self.
+            # 'pad': self.
+            # 'via': self.
+            # 'line': self.
+            # 'arc': self.
+            # 'area': self.
+            # 'trace': self.
+            'place': self.cmdPlace,
+            })
+
+    def cmdPlace(self, **kwargs):
+        print 'place!!!'
 
     # def addText(self, i):
     #     print 'addText'

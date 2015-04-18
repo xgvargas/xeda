@@ -25,9 +25,8 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
         # self.edt_console.setLocals({'app': self})
 
         self.scene = bbb.PCBScene(mycfg.pcb)
-        self.scene22 = bbb.PCBScene(mycfg.pcb)
-        self.scene.setSceneRect(0, 0, 20000, 20000)
         self.gpv_pcb.setScene(self.scene)
+        self.scene22 = bbb.SCHScene(mycfg.sch)
         self.gpv_sch.setScene(self.scene22)
 
         for x in xrange(0, 15000, 250):
@@ -45,7 +44,7 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
         self.scene.addLine(1000, 1000, 2000, 3000,
                            pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 100,
                                           QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
-        self.scene.addLine(2000, 3000, 5000, 3000,
+        self.scene22.addLine(2000, 3000, 5000, 3000,
                            pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 100,
                                           QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
         self.scene.addLine(4000, 1000, 4000, 3500,
