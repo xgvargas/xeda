@@ -1,31 +1,97 @@
 ---
 
-units: mm
+version: 1
 
-pcbcolors:
-	back: [0, 0, 0]
-	grid1: [64, 64, 64]
-	grid2: [222, 222, 222]
-	guide: [255, 255, 255]
-	layer:
-		top: [200, 0, 0, 127]
-		bottom: [0, 0, 200, 127]
-		edge:
+projects:
+    - proj1
+    - proj2
 
-schcolors:
-	back: [245, 239, 191]
-	grid1: [226, 223, 208]
-	grid2: [171, 169, 129]
-	guide: [0, 0, 0]
-	item:
-		wire:
-		junction:
-		bus:
-		busnentry:
-		pin:
-		text:
-		net:
-		port:
-		art:
+pcb:
+    grid1: 100
+    grid2: 250
+    snap: 20
+    dim: [10000, 10000]
+    libs:
+        - path1
+        - path2
+    colors:
+        back: [0, 0, 0]
+        grid1: [64, 64, 64]
+        grid2: [222, 222, 222]
+        guide: [255, 255, 255]
+        layer:
+            tpaste:
+            tglue:
+            tsilk:
+            tmask:
+            top: [255, 128, 128, 127]
+            l1:
+            l2:
+            l3:
+            l4:
+            l5:
+            l6:
+            bottom: [128, 128, 255, 127]
+            bmask:
+            bsilk:
+            bglue:
+            bpaste:
+            edge:
+            keepout:
+            aux1:
+            aux2:
+            aux3:
+            aux4:
+            aux5:
+    shortcuts:
+        grid: G
+        text: PS
+        pad: PP
+        via: PV
+        line: PL
+        arc: PR
+        area: PA
+        trace: T
+        delete: Del
+        clearsel: X
+        setorigin: O
+        resetorigin: R
+        rotate: Space
+        layer: L
 
+sch:
+    grid: 100
+    snap: 100
+    libs:
+        - path1
+        - path2
+    colors:
+        back: [245, 239, 191]
+        grid1: [226, 223, 208]
+        grid2: [171, 169, 129]
+        guide: [0, 0, 0]
+        item:
+            wire:
+            junction:
+            bus:
+            busnentry:
+            pin:
+            text:
+            net:
+            port:
+            art:
+    shortcuts:
+        grid: G
+        part: PP
+        power: PO
+        text: PS
+        line: PL
+        arc: PR
+        trace: T
+        junction: J
+        delete: DEL
+        clearsel: X
+        setorigin: O
+        resetorigin: R
+        rotate: Space
 ...

@@ -10,7 +10,12 @@ import sys, os
 from xeda_ui import *   #this also imports QtGui and QtCore
 import smartside.signal as smartsignal
 from smartside import setAsApplication
-import pcbgraphicsview as bbb
+import xedagraphicsview as bbb
+import xhelper
+
+
+
+
 
 class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
     def __init__(self, parent=None):
@@ -19,10 +24,11 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
 
         # self.edt_console.setLocals({'app': self})
 
-        self.scene = QtGui.QGraphicsScene()
+        self.scene = bbb.PCBScene(mycfg.pcb)
+        self.scene22 = bbb.PCBScene(mycfg.pcb)
         self.scene.setSceneRect(0, 0, 20000, 20000)
         self.gpv_pcb.setScene(self.scene)
-        self.gpv_sch.setScene(self.scene)
+        self.gpv_sch.setScene(self.scene22)
 
         for x in xrange(0, 15000, 250):
             for y in xrange(0, 17000, 250):
@@ -57,6 +63,8 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
 
 
 ######################################################################
+
+mycfg = xhelper.readYamlConfig('config.yaml')
 
 
 app = QtGui.QApplication(sys.argv)

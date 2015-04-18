@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>718</width>
-    <height>436</height>
+    <height>512</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_pcb">
        <attribute name="title">
@@ -39,7 +39,7 @@
          <number>1</number>
         </property>
         <item>
-         <widget class="PCBGraphicsView" name="gpv_pcb"/>
+         <widget class="XedaGraphicsView" name="gpv_pcb"/>
         </item>
        </layout>
       </widget>
@@ -52,7 +52,7 @@
          <number>1</number>
         </property>
         <item>
-         <widget class="SCHGraphicsView" name="gpv_sch"/>
+         <widget class="XedaGraphicsView" name="gpv_sch"/>
         </item>
        </layout>
       </widget>
@@ -97,36 +97,6 @@
         </attribute>
        </widget>
       </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dock_console">
-   <property name="minimumSize">
-    <size>
-     <width>93</width>
-     <height>95</height>
-    </size>
-   </property>
-   <property name="features">
-    <set>QDockWidget::DockWidgetFeatureMask</set>
-   </property>
-   <property name="allowedAreas">
-    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
-   </property>
-   <property name="windowTitle">
-    <string>Console</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_4">
-    <layout class="QGridLayout" name="gridLayout">
-     <property name="margin">
-      <number>0</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QPlainTextEdit" name="edt_console"/>
      </item>
     </layout>
    </widget>
@@ -182,14 +152,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PCBGraphicsView</class>
+   <class>XedaGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>pcbgraphicsview</header>
-  </customwidget>
-  <customwidget>
-   <class>SCHGraphicsView</class>
-   <extends>QGraphicsView</extends>
-   <header>pcbgraphicsview</header>
+   <header>xedagraphicsview</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -12,7 +12,7 @@ class DimEdit(QtGui.QLineEdit):
         self.step = .1
 
     def _getDefUnit(self):
-        return 'mils'
+        return 'mils'      #TODO ler to projeto
 
     def _explode(self, txt):
         g = re.match(r'^\s*([+-]?\d+[,.]?\d*|[+-]?[.,]\d+)\s*(?:([+*/-])\s*(\d+[,.]?\d*|[.,]\d+))?\s*(mm|in|mils?|cm)?\s*$', txt)

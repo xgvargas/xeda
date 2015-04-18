@@ -1,0 +1,24 @@
+0 top
+1 l1
+2 l2
+3 l3
+4 l4
+5 l5
+6 l6
+32 bottom
+
+33 tpaste
+34 tglue
+35 tsilk
+36 tmask
+37 bmask
+38 bsilk
+39 bglue
+40 bpaste
+41 edge
+42 keepout
+43 aux1
+44 aux2
+45 aux3
+46 aux4
+47 aux5

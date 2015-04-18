@@ -4,10 +4,10 @@ from PySide import QtCore, QtGui
 import re
 
 
-class BaseXedaView(QtGui.QGraphicsView):
+class XedaGraphicsView(QtGui.QGraphicsView):
 
     def __init__(self, *args, **kwargs):
-        super(BaseXedaView, self).__init__(*args, **kwargs)
+        super(XedaGraphicsView, self).__init__(*args, **kwargs)
 
         self.setCursor(QtCore.Qt.BlankCursor)
         # self.unsetCursor()  #para mostrar o cursor denovo...
@@ -22,33 +22,12 @@ class BaseXedaView(QtGui.QGraphicsView):
         self.scale(.1, -.1)
 
         self.guide = QtGui.QColor(255, 255, 255)
-        self.background = QtGui.QColor(0, 0, 0)
-        self.grids = [(100, QtGui.QColor(64, 64, 64)), (1000, QtGui.QColor(255, 255, 255))]
 
         self._pan_pos = None
         self._mouse_pos = QtCore.QPointF(0, 0)
 
-    def _drawGrid(self, p, rect, pen, size):
-        s = self.transform().m11()
-        if size*s < 5: return     #grid is too small, so ignore it
-
-        left = int(rect.left()-(rect.left()%size))
-        top = int(rect.top()-(rect.top()%size))
-        lines = []
-        for x in xrange(left, int(rect.right()), size):
-            lines.append(QtCore.QLineF(x, rect.top(), x, rect.bottom()))
-        for y in xrange(top, int(rect.bottom()), size):
-            lines.append(QtCore.QLineF(rect.left(), y, rect.right(), y))
-
-        p.setPen(pen)
-        p.drawLines(lines)
-
     def drawBackground(self, paint, rect):
-        paint.fillRect(rect, self.background)
-
-        for g in self.grids:
-            p = QtGui.QPen(g[1], 0)
-            self._drawGrid(paint, rect, p, g[0])
+        paint.drawPixmap(0, 0, self.scene().renderStatic())
 
     def drawForeground(self, paint, rect):
         paint.setPen(QtGui.QPen(self.guide))
@@ -72,7 +51,7 @@ class BaseXedaView(QtGui.QGraphicsView):
             event.ignore()
 
     def mousePressEvent(self, event):
-        super(BaseXedaView, self).mousePressEvent(event)
+        super(XedaGraphicsView, self).mousePressEvent(event)
         if event.button() == QtCore.Qt.MouseButton.MiddleButton:
             self._pan_pos = event.pos()
             event.accept()
@@ -80,7 +59,7 @@ class BaseXedaView(QtGui.QGraphicsView):
             event.ignore()
 
     def mouseMoveEvent(self, event):
-        super(BaseXedaView, self).mouseMoveEvent(event)
+        super(XedaGraphicsView, self).mouseMoveEvent(event)
         self._mouse_pos = self.mapToScene(event.pos())
         self.scene().invalidate()
         i = self.items(event.pos())
@@ -99,7 +78,7 @@ class BaseXedaView(QtGui.QGraphicsView):
             event.ignore()
 
     def mouseReleaseEvent(self, event):
-        super(BaseXedaView, self).mouseReleaseEvent(event)
+        super(XedaGraphicsView, self).mouseReleaseEvent(event)
         if event.button() == QtCore.Qt.MouseButton.MiddleButton:
             self._pan_pos = None
             event.accept()
@@ -116,17 +95,148 @@ class BaseXedaView(QtGui.QGraphicsView):
         print event.key(), event.modifiers(), event.type()
 
 
-class PCBGraphicsView(BaseXedaView):
-    pass
 
-class SCHGraphicsView(BaseXedaView):
+
+
+
+
+
+
+
+class BaseXedaScene(QtGui.QGraphicsScene):
+
+    def __init__(self, config=None, *args, **kwargs):
+        super(BaseXedaScene, self).__init__(*args, **kwargs)
+
+        self.cfg = config
+
+        self.staticScene = QtGui.QGraphicsScene()
+
+        self.staticImage = None
+
+    def renderStatic(self):
+        if self.staticImage:
+            pass
+
+        else:
+            self.staticImage = QtGui.QPixmap(self.cfg.dim[0], self.cfg.dim[1])
+            # self.staticImage = QtGui.QPixmap(20000,10000)
+            qp = QtGui.QPainter(self.staticImage)
+
+            qp.fillRect(0, 0, self.cfg.dim[0], self.cfg.dim[1], QtGui.QColor(*self.cfg.colors.back))
+
+            qp.drawLine(0, 0, self.cfg.dim[0], self.cfg.dim[1])
+
+            def doGrid(color, size):
+                # s = self.transform().m11()
+                # if size*s < 5: return     #grid is too small, so ignore it
+
+                # left = int(rect.left()-(rect.left()%size))
+                # top = int(rect.top()-(rect.top()%size))
+                # lines = []
+                # for x in xrange(left, int(rect.right()), size):
+                #     lines.append(QtCore.QLineF(x, rect.top(), x, rect.bottom()))
+                # for y in xrange(top, int(rect.bottom()), size):
+                #     lines.append(QtCore.QLineF(rect.left(), y, rect.right(), y))
+                lines = []
+                for x in xrange(0, self.cfg.dim[0], size):
+                    lines.append(QtCore.QLineF(x, 0, x, self.cfg.dim[1]))
+                for y in xrange(0, self.cfg.dim[1], size):
+                    lines.append(QtCore.QLineF(0, y, self.cfg.dim[0], y))
+
+                qp.setPen(QtGui.QPen(QtGui.QColor(*color), 1))
+                qp.drawLines(lines)
+
+            if self.cfg.grid1:
+                doGrid(self.cfg.colors.grid1, self.cfg.grid1)
+
+            # if self.cfg.grid2:
+            #     doGrid(self.cfg.colors.grid2, self.cfg.grid2)
+
+        return self.staticImage
+
+
+    # def setGrid(self):
+    #     print 'setGrid'
+    # def setOrigin(self, pos):
+    #     print 'setOrigin'
+    # def resetOrigin(self):
+    #     print 'resetOrigin'
+    # def clearSelection(self):
+    #     print 'clearSelection'
+    # def removeItem(self, item):
+    #     print 'removeItem'
+    # def rotateItem(self, item):
+    #     print 'rotateItem'
+
+
+
+
+
+
+
+
+
+class PCBScene(BaseXedaScene):
 
     def __init__(self, *args, **kwargs):
-        super(SCHGraphicsView, self).__init__(*args, **kwargs)
+        super(PCBScene, self).__init__(*args, **kwargs)
 
-        self.guide = QtGui.QColor(0, 0, 0)
-        self.background = QtGui.QColor(245, 239, 191)
-        self.grids = [(100, QtGui.QColor(226, 223, 208)), (1000, QtGui.QColor(171, 169, 129))]
+    # def addText(self, i):
+    #     print 'addText'
+    # def addVia(self, i):
+    #     print 'addVia'
+    # def addPad(self, i):
+    #     print 'addPad'
+    # def addLine(self, i):
+    #     print 'addLine'
+    # def addArc(self, i):
+    #     print 'addArc'
+    # def addArea(self, i):
+    #     print 'addArea'
+    # def addPart(self, i):
+    #     print 'addPart'
+    # def setLayer(self, i):
+    #     print 'setLayer'
+    # def addTrace(self, i):
+    #     print 'addTrace'
+
+
+
+
+
+
+
+
+
+
+
+class SCHScene(BaseXedaScene):
+
+    def __init__(self, *args, **kwargs):
+        super(SCHScene, self).__init__(*args, **kwargs)
+
+    # def addPart(self, i):
+    #     print 'addPart'
+    # def addPower(self, i):
+    #     print 'addPower'
+    # def addText(self, i):
+    #     print 'addText'
+    # def addLine(self, i):
+    #     print 'addLine'
+    # def addArc(self, i):
+    #     print 'addArc'
+    # def addJunction(self, i):
+    #     print 'addJunction'
+    # def addTrace(self, i):
+    #     print 'addTrace'
+
+
+
+
+
+
+
 
 
 class BaseXedaItem(QtGui.QGraphicsItem):
@@ -172,6 +282,10 @@ class BaseXedaItem(QtGui.QGraphicsItem):
     #     super(BaseXedaItem, self).setPos(x, y)
     #     self._x_x = x
     #     self._x_y = y
+
+
+
+
 
 
 
@@ -242,6 +356,12 @@ class BaseXedaInspector(QtGui.QDialog):
 
 
 
+
+
+
+
+
+
 from ins_via_ui import *
 
 class PCBViaInspector(BaseXedaInspector, Ui_dlg_via):
@@ -273,6 +393,13 @@ class PCBViaInspector(BaseXedaInspector, Ui_dlg_via):
         return (result == QtGui.QDialog.Accepted), dialog.dump()
 
 
+
+
+
+
+
+
+
 class PCBViaItem(BaseXedaItem):
 
     _x_name = 'VIA'
@@ -285,7 +412,7 @@ class PCBViaItem(BaseXedaItem):
         self._x_plated = False
         self._x_net = None
         self._x_start = 1
-        self._x_end = 16
+        self._x_end = 32
         self._x_tent = False
         self._x_mask = None
 
