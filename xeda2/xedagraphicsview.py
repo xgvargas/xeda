@@ -39,22 +39,28 @@ class XedaGraphicsView(QtGui.QGraphicsView):
                 s = self.transform().m11()
                 if size*s < 5: return     #grid is too small, so ignore it
 
-                left = int(rect.left()-(rect.left()%size))
-                top = int(rect.top()-(rect.top()%size))
+                left = rect.left()-(rect.left()%size)
+                top = rect.top()-(rect.top()%size)
                 lines = []
-                for x in xrange(left, int(rect.right()), size):
+                x = left
+                end = rect.right()
+                while x < end:
                     lines.append(QtCore.QLineF(x, rect.top(), x, rect.bottom()))
-                for y in xrange(top, int(rect.bottom()), size):
+                    x += size
+                y = top
+                end = rect.bottom()
+                while y < end:
                     lines.append(QtCore.QLineF(rect.left(), y, rect.right(), y))
+                    y += size
 
-                paint.setPen(QtGui.QPen(QtGui.QColor(*color), int(self.scene().cfg.weakgrid)))
+                paint.setPen(QtGui.QPen(QtGui.QColor(*color), int(self.scene().proj.weakgrid)))
                 paint.drawLines(lines)
 
-            if self.scene().cfg.grid1: doGrid(self.scene().cfg.colors.grid1, self.scene().cfg.grid1)
-            if self.scene().cfg.grid2: doGrid(self.scene().cfg.colors.grid2, self.scene().cfg.grid2)
+            if self.scene().proj.grid1: doGrid(self.scene().cfg.colors.grid1, self.scene().proj.grid1)
+            if self.scene().proj.grid2: doGrid(self.scene().cfg.colors.grid2, self.scene().proj.grid2)
 
     def drawForeground(self, paint, rect):
-        paint.setPen(QtGui.QPen(self.guide))
+        paint.setPen(QtGui.QPen(QtGui.QColor(*self.scene().cfg.colors.guide)))
         paint.drawLine(rect.left(), self._mouse_pos.y(), rect.right(), self._mouse_pos.y())
         paint.drawLine(self._mouse_pos.x(), rect.top(), self._mouse_pos.x(), rect.bottom())
 
@@ -128,6 +134,8 @@ class XedaGraphicsView(QtGui.QGraphicsView):
 
 
 
+
+
 from dlg_grid_ui import *
 import smartside.signal as smartsignal
 
@@ -139,14 +147,18 @@ class GridDialog(QtGui.QDialog, Ui_dlg_grid, smartsignal.SmartSignal):
         self.setupUi(self)
         self.auto_connect()
 
-    def _on_edt_snap_comp__textChanged(self):
-        self.sel_snap_comp.setCurrentIndex(1)
-    def _on_edt_snap_all__textChanged(self):
-        self.sel_snap_all.setCurrentIndex(1)
-    def _on_edt_grid1__textChanged(self):
-        self.sel_grid1.setCurrentIndex(1)
-    def _on_edt_grid2__textChanged(self):
-        self.sel_grid2.setCurrentIndex(1)
+    def _on_edt_snap_comp__textChanged(self): self.sel_snap_comp.setCurrentIndex(1)
+    def _on_edt_snap_all__textChanged(self): self.sel_snap_all.setCurrentIndex(1)
+    def _on_edt_grid1__textChanged(self): self.sel_grid1.setCurrentIndex(1)
+    def _on_edt_grid2__textChanged(self): self.sel_grid2.setCurrentIndex(1)
+    def _on_sel_snap_comp__currentIndexChanged(self):
+        if self.sender().currentIndex() == 1: self.edt_snap_comp.setFocus()
+    def _on_sel_snap_all__currentIndexChanged(self):
+        if self.sender().currentIndex() == 1: self.edt_snap_all.setFocus()
+    def _on_sel_grid1__currentIndexChanged(self):
+        if self.sender().currentIndex() == 1: self.edt_grid1.setFocus()
+    def _on_sel_grid2__currentIndexChanged(self):
+        if self.sender().currentIndex() == 1: self.edt_grid2.setFocus()
 
     @staticmethod
     def execute(data, parent=None):
@@ -169,10 +181,11 @@ class GridDialog(QtGui.QDialog, Ui_dlg_grid, smartsignal.SmartSignal):
 
 class BaseXedaScene(QtGui.QGraphicsScene):
 
-    def __init__(self, config=None, *args, **kwargs):
+    def __init__(self, config, project, *args, **kwargs):
         super(BaseXedaScene, self).__init__(*args, **kwargs)
 
         self.cfg = config
+        self.proj = project
 
         self.procNames = {
             'grid': self.setGrid,

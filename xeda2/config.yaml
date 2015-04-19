@@ -6,16 +6,13 @@ projects:
     - proj1
     - proj2
 
-pcb:
-    grid1: 100
-    grid2: 1000
-    weakgrid: true
+libs:
+    - lib1
+    - lib2
+    - libnnn
 
-    snap: 20
+pcb:
     dim: [20000, 20000]
-    libs:
-        - path1
-        - path2
     colors:
         back: [0, 0, 0]
         grid1: [64, 64, 64]
@@ -64,21 +61,12 @@ pcb:
         layer: L
 
 sch:
-    grid1: 0
-    grid2: 500
-    weakgrid: false
-
     dim: [20000, 20000]
-
-    snap: 100
-    libs:
-        - path1
-        - path2
     colors:
         back: [245, 239, 191]
         grid1: [80, 80, 208]
-        grid2: [171, 80, 60]
-        guide: [0, 0, 0]
+        grid2: [222, 30, 60]
+        guide: [0, 0, 110]
         item:
             wire:
             junction:

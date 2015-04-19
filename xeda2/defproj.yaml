@@ -4,24 +4,39 @@ version: 1
 created: 10/4/1977 19:30:22
 saved: 18/04/2015 12:36:00
 
-units: mm
-
 files:
-	- blah.sch
-	- blah.pcb
+    - blah.sch
+    - blah.pcb
 
 libs:
-	- extralib1
-	- extralib2
+    - extralib1
+    - extralib2
 
-drc:
-	class:
-		- name: Default
-		  w: 10
-	      c: 9
-	      v: [28, 16]
-	    - name: Power
-	      w: 14
-	      c: 10
-	      v: [32, 20]
+pcb:
+    units: mm
+    grid1: 100.5
+    grid2: 1000.9
+    weakgrid: true
+    snap: 20
+    layers:
+        active: [0, 32, 44, 45]
+        pairs:
+            - [0, 32]
+    drc:
+        class:
+            - name: Default
+              w: 10
+              c: 9
+              v: [28, 16]
+            - name: Power
+              w: 14
+              c: 10
+              v: [32, 20]
+
+sch:
+    units: mm
+    grid1: 0
+    grid2: 500
+    weakgrid: false
+    snap: 100
 ...

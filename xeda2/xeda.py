@@ -15,8 +15,6 @@ import xhelper
 
 
 
-
-
 class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
     def __init__(self, parent=None):
         super(MyApplication, self).__init__(parent)
@@ -24,9 +22,9 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
 
         # self.edt_console.setLocals({'app': self})
 
-        self.scene = bbb.PCBScene(mycfg.pcb)
+        self.scene = bbb.PCBScene(mycfg.pcb, myproj.pcb)
         self.gpv_pcb.setScene(self.scene)
-        self.scene22 = bbb.SCHScene(mycfg.sch)
+        self.scene22 = bbb.SCHScene(mycfg.sch, myproj.sch)
         self.gpv_sch.setScene(self.scene22)
 
         for x in xrange(0, 15000, 250):
@@ -64,6 +62,7 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
 ######################################################################
 
 mycfg = xhelper.readYamlConfig('config.yaml')
+myproj = xhelper.readYamlConfig('defproj.yaml')
 
 
 app = QtGui.QApplication(sys.argv)
