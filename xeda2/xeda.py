@@ -12,6 +12,7 @@ import smartside.signal as smartsignal
 from smartside import setAsApplication
 import xedagraphicsview as bbb
 import xhelper
+import config
 
 
 
@@ -22,9 +23,9 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
 
         # self.edt_console.setLocals({'app': self})
 
-        self.scene = bbb.PCBScene(mycfg.pcb, myproj.pcb)
+        self.scene = bbb.PCBScene(config.meta.pcb, myproj.pcb)
         self.gpv_pcb.setScene(self.scene)
-        self.scene22 = bbb.SCHScene(mycfg.sch, myproj.sch)
+        self.scene22 = bbb.SCHScene(config.meta.sch, myproj.sch)
         self.gpv_sch.setScene(self.scene22)
 
         for x in xrange(0, 15000, 250):
@@ -33,11 +34,14 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
                 a.setPos(x, y)
                 self.scene.addItem(a)
                 if x%1000 == 0 and y%1000 == 0:
-                    a = self.scene.addSimpleText('({:d},{:d})'.format(x, y))
+                    a = bbb.PCBStringItem()
                     a.setPos(x, y)
-                    a.scale(1, -1)
-                    a.setFont(QtGui.QFont("Times", 50, QtGui.QFont.Bold))
-                    a.setBrush(QtGui.QBrush(QtGui.QColor(0, 255, 0)))
+                    self.scene.addItem(a)
+                    # a = self.scene.addSimpleText('({:d},{:d})'.format(x, y))
+                    # a.setPos(x, y)
+                    # a.scale(1, -1)
+                    # a.setFont(QtGui.QFont("Times", 50, QtGui.QFont.Bold))
+                    # a.setBrush(QtGui.QBrush(QtGui.QColor(0, 255, 0)))
 
         self.scene.addLine(1000, 1000, 2000, 3000,
                            pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 100,
@@ -61,7 +65,12 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
 
 ######################################################################
 
-mycfg = xhelper.readYamlConfig('config.yaml')
+config.init()
+
+print dir(config.meta)
+print dir (config.meta.pcb.colors.layer)
+# sys.exit(0)
+
 myproj = xhelper.readYamlConfig('defproj.yaml')
 
 

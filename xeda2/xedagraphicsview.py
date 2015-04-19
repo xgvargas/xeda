@@ -2,6 +2,42 @@
 
 from PySide import QtCore, QtGui
 import re
+import config
+
+
+
+
+
+layersId = {
+    0: 'top',
+    1: 'l1',
+    2: 'l2',
+    3: 'l3',
+    4: 'l4',
+    5: 'l5',
+    6: 'l6',
+    32: 'bottom',
+    33: 'tpaste',
+    34: 'bpaste',
+    35: 'tglue',
+    36: 'bglue',
+    37: 'tsilk',
+    38: 'bsilk',
+    39: 'tmask',
+    40: 'bmask',
+    41: 'edge',
+    42: 'aux1',
+    43: 'aux2',
+    44: 'aux3',
+    45: 'aux4',
+    46: 'aux5',
+    47: 'keepout'
+    }
+
+layersId.update({v: k for k, v in layersId.iteritems()})
+
+
+
 
 
 class XedaGraphicsView(QtGui.QGraphicsView):
@@ -398,6 +434,8 @@ class BaseXedaInspector(QtGui.QDialog):
                 pass
             elif t == 6: #
                 pass
+            elif t == 7: #string
+                self.getbyname(ui).setText(data[f])
 
     def dump(self):
         for t, f, ui in self._UI_XO:
@@ -413,6 +451,8 @@ class BaseXedaInspector(QtGui.QDialog):
                 pass
             elif t == 6: #
                 pass
+            elif t == 7: #string
+                self._data[f] = self.getbyname(ui).text()
         print self._data
         return self._data
 
@@ -488,5 +528,73 @@ class PCBViaItem(BaseXedaItem):
 
     def inspect(self):
         ok, data = PCBViaInspector.inspect(self.pack())
+        if ok:
+            self.unpack(data)
+
+
+
+
+
+
+
+
+
+from ins_string_ui import *
+
+class PCBStringInspector(BaseXedaInspector, Ui_dlg_string):
+
+    _UI_XO = (
+        (7, 'string', 'edt_string'),
+        (2, 'height', 'edt_height'),
+        (2, 'angle', 'edt_angle'),
+        (3, 'mirror', 'chk_mirror'),
+        (5, 'layer', 'sel_layer'),
+        (1, 'x', 'edt_x'),
+        (1, 'y', 'edt_y')
+        )
+
+    def __init__(self, data, parent=None):
+        super(PCBStringInspector, self).__init__(parent)
+        self.setupUi(self)
+        self.populate(data)
+
+    @staticmethod
+    def inspect(data, parent=None):
+        dialog = PCBStringInspector(data, parent)
+        result = dialog.exec_()
+        return (result == QtGui.QDialog.Accepted), dialog.dump()
+
+
+
+
+
+
+
+
+
+class PCBStringItem(BaseXedaItem):
+
+    _x_name = 'String'
+
+    def __init__(self):
+        super(PCBStringItem, self).__init__()
+
+        self._x_string = 'Xeda'
+        self._x_height = 40
+        self._x_angle = 0
+        self._x_mirror = False
+        self._x_layer = 37
+
+    def boundingRect(self):
+        fm = QtGui.QFontMetrics(QtGui.QFont("times", self._x_height))
+        return fm.boundingRect(self._x_string)
+
+    def paint(self, painter, option, widget):
+        painter.setFont(QtGui.QFont("times", self._x_height))
+        painter.setPen(QtGui.QPen(QtGui.QColor(*config.meta.pcb.colors.layer._d[layersId[self._x_layer]]), 1))
+        painter.drawText(0, 0, self._x_string)
+
+    def inspect(self):
+        ok, data = PCBStringInspector.inspect(self.pack())
         if ok:
             self.unpack(data)

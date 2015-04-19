@@ -21,7 +21,7 @@ pcb:
         layer:
             tpaste:
             tglue:
-            tsilk:
+            tsilk: [255, 128, 255, 255]
             tmask:
             top: [255, 128, 128, 127]
             l1:
