@@ -3,6 +3,7 @@
 from PySide import QtCore, QtGui
 import re
 import config
+from collections import namedtuple
 
 
 
@@ -37,10 +38,13 @@ layersId = {
 layersId.update({v: k for k, v in layersId.iteritems()})
 
 
-
+Position = namedtuple('Position', 'x y')
 
 
 class XedaGraphicsView(QtGui.QGraphicsView):
+
+    moveEvent = QtCore.Signal(tuple)
+    hoverEvent = QtCore.Signal(tuple)
 
     def __init__(self, *args, **kwargs):
         super(XedaGraphicsView, self).__init__(*args, **kwargs)
@@ -59,7 +63,7 @@ class XedaGraphicsView(QtGui.QGraphicsView):
         self.guide = QtGui.QColor(255, 255, 255)
 
         self._pan_pos = None
-        self._mouse_pos = QtCore.QPointF(0, 0)
+        self._mouse_pos = Position(0, 0)
 
     def setScene(self, scene):
         super(XedaGraphicsView, self).setScene(scene)
@@ -127,6 +131,10 @@ class XedaGraphicsView(QtGui.QGraphicsView):
     def mouseMoveEvent(self, event):
         super(XedaGraphicsView, self).mouseMoveEvent(event)
         self._mouse_pos = self.mapToScene(event.pos())
+        self.mapToScene(event.pos())
+        self._mouse_pos = Position()
+
+
         self.scene().invalidate()
         i = self.items(event.pos())
         if i:
@@ -390,32 +398,32 @@ class BaseXedaItem(QtGui.QGraphicsItem):
 
 class BaseXedaInspector(QtGui.QDialog):
 
-    def getbyname(self, name):
+    def getByName(self, name):
         o = getattr(self, name, None)
         if o:
             if isinstance(o, QtGui.QWidget):
                 return o
         return None
 
-    def _toBase(self, val):
-        g = re.match(r'^\s*([+-]?\d+[,.]?\d*|[+-]?[.,]\d+)\s*(mm|in|mils?|cm)?\s*$', val)
-        if g:
-            v = float(g.group(1))
-            unit = g.group(2)
-            if unit == 'mil' or unit == 'mils': return int(v)
-            if unit == 'in': return int(v*1000.0)
-            if unit == 'mm': return int(v*39.37)
-            if unit == 'cm': return int(v*393.7)
-            return 0
+    # def _toBase(self, val):
+    #     g = re.match(r'^\s*([+-]?\d+[,.]?\d*|[+-]?[.,]\d+)\s*(mm|in|mils?|cm)?\s*$', val)
+    #     if g:
+    #         v = float(g.group(1))
+    #         unit = g.group(2)
+    #         if unit == 'mil' or unit == 'mils': return int(v)
+    #         if unit == 'in': return int(v*1000.0)
+    #         if unit == 'mm': return int(v*39.37)
+    #         if unit == 'cm': return int(v*393.7)
+    #         return 0
 
-    def _fromBase(self, val, dest='mil'):
-        if val:
-            v = float(val)
-            if dest == 'mil' or dest == 'mils': return '{:.0f} mil'.format(v)
-            if dest == 'in': return '{:.0f} in'.format(v/1000.0)
-            if dest == 'mm': return '{:.3f} mm'.format(v/39.37)
-            if dest == 'cm': return '{:.3f} cm'.format(v/393.7)
-        return ''
+    # def _fromBase(self, val, dest='mil'):
+    #     if val:
+    #         v = float(val)
+    #         if dest == 'mil' or dest == 'mils': return '{:.0f} mil'.format(v)
+    #         if dest == 'in': return '{:.0f} in'.format(v/1000.0)
+    #         if dest == 'mm': return '{:.3f} mm'.format(v/39.37)
+    #         if dest == 'cm': return '{:.3f} cm'.format(v/393.7)
+    #     return ''
 
     def populate(self, data):
         print data
@@ -423,11 +431,11 @@ class BaseXedaInspector(QtGui.QDialog):
         for t, f, ui in self._UI_XO:
             print ui, f, data[f]
             if t == 1: #absolute position
-                self.getbyname(ui).setText(self._fromBase(data[f]))
+                self.getByName(ui).setDim('{}mil'.format(data[f]), 'mm')
             elif t == 2: #mm or mil dim
-                self.getbyname(ui).setText(self._fromBase(data[f]))
+                self.getByName(ui).setDim('{}mil'.format(data[f]), 'mm')
             elif t == 3: #boolean
-                self.getbyname(ui).setChecked(data[f])
+                self.getByName(ui).setChecked(data[f])
             elif t == 4: #net
                 pass
             elif t == 5: #layer
@@ -435,16 +443,16 @@ class BaseXedaInspector(QtGui.QDialog):
             elif t == 6: #
                 pass
             elif t == 7: #string
-                self.getbyname(ui).setText(data[f])
+                self.getByName(ui).setText(data[f])
 
     def dump(self):
         for t, f, ui in self._UI_XO:
             if t == 1: #absolute position
-                self._data[f] = self._toBase(self.getbyname(ui).text())
+                self._data[f] = self.getByName(ui).getDim()
             elif t == 2: #mm or mil dim
-                self._data[f] = self._toBase(self.getbyname(ui).text())
+                self._data[f] = self.getByName(ui).getDim()
             elif t == 3: #boolean
-                self._data[f] = self.getbyname(ui).isChecked()
+                self._data[f] = self.getByName(ui).isChecked()
             elif t == 4: #net
                 pass
             elif t == 5: #layer
@@ -452,7 +460,7 @@ class BaseXedaInspector(QtGui.QDialog):
             elif t == 6: #
                 pass
             elif t == 7: #string
-                self._data[f] = self.getbyname(ui).text()
+                self._data[f] = self.getByName(ui).text()
         print self._data
         return self._data
 
