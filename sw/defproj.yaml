@@ -36,7 +36,7 @@ pcb:
 sch:
     units: mm
     grid1: 0
-    grid2: 500
+    grid2: 100
     weakgrid: false
-    snap: 100
+    snap: 50
 ...

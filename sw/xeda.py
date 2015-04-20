@@ -24,9 +24,9 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
         # self.edt_console.setLocals({'app': self})
 
         self.scene = bbb.PCBScene(config.meta.pcb, myproj.pcb)
-        self.gpv_pcb.setScene(self.scene)
+        self.view_pcb.setScene(self.scene)
         self.scene22 = bbb.SCHScene(config.meta.sch, myproj.sch)
-        self.gpv_sch.setScene(self.scene22)
+        self.view_sch.setScene(self.scene22)
 
         for x in xrange(0, 15000, 250):
             for y in xrange(0, 17000, 250):
