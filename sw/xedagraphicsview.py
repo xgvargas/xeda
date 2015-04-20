@@ -102,6 +102,7 @@ class XedaGraphicsView(QtGui.QGraphicsView):
             if self.scene().proj.grid2: doGrid(self.scene().cfg.colors.grid2, self.scene().proj.grid2)
 
     def drawForeground(self, paint, rect):
+        print rect
         paint.setPen(QtGui.QPen(QtGui.QColor(*self.scene().cfg.colors.guide)))
         pos = self._snap_pos if self.doSnap else self._mouse_pos
         paint.drawLine(rect.left(), pos.y, rect.right(), pos.y)
@@ -515,7 +516,6 @@ class BaseXedaInspector(QtGui.QDialog):
                 self._data[f] = self.getByName(ui).text()
         print self._data
         return self._data
-
 
 
 
