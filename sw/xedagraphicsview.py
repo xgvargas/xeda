@@ -54,7 +54,7 @@ class XedaGraphicsView(QtGui.QGraphicsView):
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setRenderHints(QtGui.QPainter.Antialiasing|QtGui.QPainter.HighQualityAntialiasing|QtGui.QPainter.SmoothPixmapTransform|QtGui.QPainter.TextAntialiasing)
-        # self.setCacheMode(QtGui.QGraphicsView.CacheBackground)
+        self.setCacheMode(QtGui.QGraphicsView.CacheBackground)
         self.setTransformationAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
         self.setMouseTracking(True)
@@ -64,6 +64,8 @@ class XedaGraphicsView(QtGui.QGraphicsView):
 
         self._pan_pos = None
         self._mouse_pos = Position(0, 0)
+        self.doSnap = False
+        self._snap_pos = Position(0, 0)
 
     def setScene(self, scene):
         super(XedaGraphicsView, self).setScene(scene)
@@ -101,8 +103,9 @@ class XedaGraphicsView(QtGui.QGraphicsView):
 
     def drawForeground(self, paint, rect):
         paint.setPen(QtGui.QPen(QtGui.QColor(*self.scene().cfg.colors.guide)))
-        paint.drawLine(rect.left(), self._mouse_pos.y(), rect.right(), self._mouse_pos.y())
-        paint.drawLine(self._mouse_pos.x(), rect.top(), self._mouse_pos.x(), rect.bottom())
+        pos = self._snap_pos if self.doSnap else self._mouse_pos
+        paint.drawLine(rect.left(), pos.y, rect.right(), pos.y)
+        paint.drawLine(pos.x, rect.top(), pos.x, rect.bottom())
 
     def wheelEvent(self, event):
         d = event.delta()
@@ -120,25 +123,50 @@ class XedaGraphicsView(QtGui.QGraphicsView):
         else:
             event.ignore()
 
+    def _discoverItem(self, cb):
+        print self._snap_pos, self._mouse_pos
+        # i = self.items(*self._snap_pos)
+        # print i
+        # i = self.items(self._snap_pos.x, self._snap_pos.y)
+        # print i
+        i = self.scene().items(self._snap_pos.x, self._snap_pos.y, 1, 1)
+        print i
+        # i = self.items(*self._mouse_pos)
+        # print i
+        if i:
+            if len(i) > 1: #show menu
+                pass
+            else: #is unique
+                return i[0]
+        return None
+
     def mousePressEvent(self, event):
         super(XedaGraphicsView, self).mousePressEvent(event)
-        if event.button() == QtCore.Qt.MouseButton.MiddleButton:
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            i = self._discoverItem(None)
+            #TODO quando tiver mas de um item isso sera assincrono.... fudeu
+
+            #TODO prepara para arrastar....
+            #se item selecionado faz parte de uma selecao tem que mover toda ela
+        elif event.button() == QtCore.Qt.MouseButton.MiddleButton:
             self._pan_pos = event.pos()
             event.accept()
+
+        elif event.button() == QtCore.Qt.MouseButton.RightButton:
+            pass
+            #TODO mostra algum menu
         else:
             event.ignore()
 
     def mouseMoveEvent(self, event):
         super(XedaGraphicsView, self).mouseMoveEvent(event)
-        self._mouse_pos = self.mapToScene(event.pos())
-        self.mapToScene(event.pos())
-        self._mouse_pos = Position()
-
-
+        # self._mouse_pos = Position._make(self.mapToScene(event.pos()).toTuple())
+        self._mouse_pos = Position(*self.mapToScene(event.pos()).toTuple())
+        self._snap_pos = Position((self._mouse_pos.x//50)*50, (self._mouse_pos.y//50)*50)
+        # self.moveEvent.emit(self._mouse_pos)
+        self.moveEvent.emit(self._snap_pos)
         self.scene().invalidate()
-        i = self.items(event.pos())
-        if i:
-            pass
+        #self._discoverItem(None) #TODO quando tiver mas de um item isso sera assincrono.... fudeu
         if self._pan_pos:
             p = event.pos()-self._pan_pos
             self._pan_pos = event.pos()
@@ -153,26 +181,47 @@ class XedaGraphicsView(QtGui.QGraphicsView):
 
     def mouseReleaseEvent(self, event):
         super(XedaGraphicsView, self).mouseReleaseEvent(event)
-        if event.button() == QtCore.Qt.MouseButton.MiddleButton:
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            pass
+            #TODO solta o que estava arrastando...
+        elif event.button() == QtCore.Qt.MouseButton.MiddleButton:
             self._pan_pos = None
             event.accept()
+        # elif event.button() == QtCore.Qt.MouseButton.RightButton:
+        #     pass
         else:
             event.ignore()
 
     def mouseDoubleClickEvent(self, event):
-        i = self.items(event.pos())
+        i = self._discoverItem(None) #TODO quando tiver mas de um item isso sera assincrono.... fudeu
         if i:
-            if isinstance(i[0], BaseXedaItem):
-                i[0].inspect()
+            if event.button() == QtCore.Qt.MouseButton.LeftButton:
+                if isinstance(i, BaseXedaItem):
+                    i.inspect()
 
     def keyPressEvent(self, event):
         print event.text(), event.key(), event.modifiers(), event.type()
 
-        for f, k in self.scene().cfg.shortcuts._d.iteritems():
-            if isinstance(k, (list, tuple)):
-                k = k[0]
-            if k == event.text().upper():
-                self.scene().processShortcut(f)
+        if event.key() == QtCore.Qt.Key_Escape: pass
+        elif event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter: pass
+        elif event.key() == QtCore.Qt.Key_Tab: pass
+        elif event.key() == QtCore.Qt.Key_Backspace: pass
+        elif event.key() == QtCore.Qt.Key_Up: pass
+        elif event.key() == QtCore.Qt.Key_Down: pass
+        elif event.key() == QtCore.Qt.Key_Left: pass
+        elif event.key() == QtCore.Qt.Key_Right: pass
+        elif event.key() == QtCore.Qt.Key_PageUp: pass
+        elif event.key() == QtCore.Qt.Key_PageDown: pass
+        elif event.key() == QtCore.Qt.Key_End: pass
+        elif event.key() == QtCore.Qt.Key_Delete: pass
+        elif event.key() == QtCore.Qt.Key_: pass
+        elif event.key() == QtCore.Qt.Key_: pass
+        else:
+            for f, k in self.scene().cfg.shortcuts._d.iteritems():
+                if isinstance(k, (list, tuple)):
+                    k = k[0]
+                if k == event.text().upper():
+                    self.scene().processShortcut(f)
 
 
 
@@ -347,13 +396,16 @@ class SCHScene(BaseXedaScene):
 
 class BaseXedaItem(QtGui.QGraphicsItem):
 
-    def __init__(self):
+    def __init__(self, data=None):
         super(BaseXedaItem, self).__init__()
 
         self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True)
 
         self._x_selected = False
+
+        if data:
+            self.unpack(data)
 
     def boundingRect(self):
         raise NotImplementedError()
@@ -514,8 +566,7 @@ class PCBViaItem(BaseXedaItem):
 
     _x_name = 'VIA'
 
-    def __init__(self):
-        super(PCBViaItem, self).__init__()
+    def __init__(self, *args, **kwargs):
 
         self._x_od = 50
         self._x_id = 28
@@ -525,6 +576,8 @@ class PCBViaItem(BaseXedaItem):
         self._x_end = 32
         self._x_tent = False
         self._x_mask = None
+
+        super(PCBViaItem, self).__init__(*args, **kwargs)
 
     def boundingRect(self):
         return QtCore.QRectF(-self._x_od/2, -self._x_od/2, self._x_od, self._x_od)
@@ -584,14 +637,15 @@ class PCBStringItem(BaseXedaItem):
 
     _x_name = 'String'
 
-    def __init__(self):
-        super(PCBStringItem, self).__init__()
+    def __init__(self, *args, **kwargs):
 
         self._x_string = 'Xeda'
         self._x_height = 40
         self._x_angle = 0
         self._x_mirror = False
         self._x_layer = 37
+
+        super(PCBStringItem, self).__init__(*args, **kwargs)
 
     def boundingRect(self):
         fm = QtGui.QFontMetrics(QtGui.QFont("times", self._x_height))

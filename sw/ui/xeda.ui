@@ -136,7 +136,7 @@
    </attribute>
    <addaction name="action_Console"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QStatusBar" name="status"/>
   <action name="action_Console">
    <property name="icon">
     <iconset resource="xeda.qrc">

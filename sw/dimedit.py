@@ -10,11 +10,12 @@ class DimEdit(QtGui.QLineEdit):
         super(DimEdit, self).__init__(*args, **kwargs)
 
         self.step = .1
+        self.defunit = None
 
     def _explode(self, txt):
         g = re.match(r'^\s*([+-]?\d+[,.]?\d*|[+-]?[.,]\d+)\s*(?:([+*/-])\s*(\d+[,.]?\d*|[.,]\d+))?\s*(mm|in|mils?|cm)?\s*$', txt)
         if g:
-            return float(g.group(1)), g.group(2), float(g.group(3) or '0'), g.group(4)
+            return float(g.group(1)), g.group(2), float(g.group(3) or '0'), g.group(4) or self.defunit
         return None, None, None, None
 
     def _resolve(self, n1, op, n2):
@@ -44,7 +45,6 @@ class DimEdit(QtGui.QLineEdit):
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.MouseButton.MiddleButton:
-            print('deveria trocar a unidade desse campo....')
             n = self._explode(self.text())
             u = n[3]
             if u == 'mil' or u == 'mils': self.setDim(self.text(), 'mm')
@@ -65,6 +65,8 @@ class DimEdit(QtGui.QLineEdit):
         return 0
 
     def setDim(self, dim, unit):
+        if not self.defunit:
+            self.defunit = unit
         n = self._explode(dim)
         if n:
             mils = self._toMils(n[0], n[3])

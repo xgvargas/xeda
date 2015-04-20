@@ -15,7 +15,7 @@ libs:
 pcb:
     units: mm
     grid1: 100
-    grid2: 1000.9
+    grid2: 1000
     weakgrid: true
     snap: 20
     layers:

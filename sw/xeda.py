@@ -30,21 +30,20 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
 
         for x in xrange(0, 15000, 250):
             for y in xrange(0, 17000, 250):
-                a = bbb.PCBViaItem()
-                a.setPos(x, y)
+                a = bbb.PCBViaItem(dict(x=x, y=y))
                 self.scene.addItem(a)
                 if x%1000 == 0 and y%1000 == 0:
-                    a = bbb.PCBStringItem()
-                    a.setPos(x, y)
+                    a = bbb.PCBStringItem(dict(string='({:d},{:d})'.format(x, y), x=x, y=y))
                     self.scene.addItem(a)
-                    # a = self.scene.addSimpleText('({:d},{:d})'.format(x, y))
-                    # a.setPos(x, y)
-                    # a.scale(1, -1)
-                    # a.setFont(QtGui.QFont("Times", 50, QtGui.QFont.Bold))
-                    # a.setBrush(QtGui.QBrush(QtGui.QColor(0, 255, 0)))
 
         self.scene.addLine(1000, 1000, 2000, 3000,
                            pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 100,
+                                          QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
+        self.scene.addLine(4000, 5000, 2000, 3000,
+                           pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 14,
+                                          QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
+        self.scene.addLine(4000, 5000, 4250, 6000,
+                           pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 14,
                                           QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
         self.scene22.addLine(2000, 3000, 5000, 3000,
                            pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 100,
@@ -62,15 +61,13 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
     def _on_action_Console__triggered(self):
         self.dock_console.show()
 
+    def _on_gpv_pcb__moveEvent(self, e):
+        self.status.showMessage('x: {:.1f} y: {:.1f}'.format(e.x, e.y), 2000)
+
 
 ######################################################################
 
 config.init()
-
-print dir(config.meta)
-print dir (config.meta.pcb.colors.layer)
-# sys.exit(0)
-
 myproj = xhelper.readYamlConfig('defproj.yaml')
 
 
