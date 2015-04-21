@@ -76,7 +76,6 @@ class XedaViewer(QtGui.QWidget):
         self.scene.setSceneSize(self.viewSize)
 
     def paintEvent(self, e):
-        # qp = QtGui.QPainter(self)
         qp = QtGui.QPainter()
         qp.begin(self)
         self.viewRect.setWidth(e.rect().width()/self.scale),
@@ -90,10 +89,9 @@ class XedaViewer(QtGui.QWidget):
             self.previousRect = QtCore.QRectF(self.viewRect)
             self._gridImage = QtGui.QPixmap(e.rect().width(), e.rect().height())
             p = QtGui.QPainter(self._gridImage)
-            # p.setTransform(QtGui.QTransform(self.scale, 0, 0, self.scale, 0, 0))
             p.setTransform(t)
             p.translate(self.origin)
-            self._drawGrid(p, self.viewRect.translated(-self.origin.x(), -self.origin.y()))
+            self._drawGrid(p, self.viewRect.translated(-self.origin))
         qp.drawPixmap(0, 0, self._gridImage)
 
         qp.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
@@ -271,17 +269,24 @@ class BaseXedaScene(object):
             }
 
         self._gridImage = None
+        self._previousSceneRect = None
 
     def setSceneSize(self, size):
         print size
 
     def renderLayer(self, transf, layer, sceneRect, rect):
-        if not self._gridImage:
+        if not self._gridImage or sceneRect != self._previousSceneRect:
+            self._previousSceneRect = QtCore.QRectF(sceneRect)
             print 'processando layer', layer
             self._gridImage = QtGui.QPixmap(rect.width(), rect.height())
             self._gridImage.fill(QtGui.QColor(0, 0, 0, 0))
             p = QtGui.QPainter(self._gridImage)
             p.setTransform(transf)
+            p.setPen(QtGui.QPen(QtGui.QColor(128, 128, 255, 128),
+                  10,
+                  QtCore.Qt.SolidLine,
+                  QtCore.Qt.RoundCap,
+                  QtCore.Qt.RoundJoin))
             p.drawLine(0,0,1000,1000)
         return self._gridImage
 
