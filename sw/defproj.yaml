@@ -39,4 +39,6 @@ sch:
     grid2: 1000
     weakgrid: false
     snap: 50
+    layers:
+        active: [0]
 ...

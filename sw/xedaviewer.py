@@ -96,6 +96,10 @@ class XedaViewer(QtGui.QWidget):
             self._drawGrid(p, self.viewRect.translated(-self.origin.x(), -self.origin.y()))
         qp.drawPixmap(0, 0, self._gridImage)
 
+        qp.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
+        for l in self.scene.proj.layers.active:
+            qp.drawPixmap(0, 0, self.scene.renderLayer(t, l, self.viewRect, e.rect()))
+
         qp.setTransform(t)
         qp.setPen(QtGui.QPen(QtGui.QColor(128, 128, 255, 127),
                   20,
@@ -103,6 +107,8 @@ class XedaViewer(QtGui.QWidget):
                   QtCore.Qt.RoundCap,
                   QtCore.Qt.RoundJoin))
         qp.drawLine(1000, 1000, 2000, 3000)
+
+
         self._drawCursor(qp, self.viewRect)
         qp.end()
 
@@ -152,19 +158,15 @@ class XedaViewer(QtGui.QWidget):
 
         if event.orientation() == QtCore.Qt.Orientation.Vertical:
             factor = 1.25
-
-            if d > 0:  #in
+            if d > 0:
                 if self.scale < 1.6: self.scale *= factor
             else:
                 if self.scale > .04: self.scale /= factor
-
             self.viewRect.setLeft(min(self.viewSize.width()-self.viewRect.width(),
                                   max(0, self._mouse_pos.x()-event.pos().x()/self.scale)))
             self.viewRect.setTop(min(self.viewSize.height()-self.viewRect.height(),
                                  max(0, self._mouse_pos.y()-event.pos().y()/self.scale)))
-
             self.repaint()
-
             event.accept()
         else:
             event.ignore()
@@ -247,6 +249,8 @@ class XedaViewer(QtGui.QWidget):
 
 
 
+
+
 class BaseXedaScene(object):
 
     def __init__(self, config, project, *args, **kwargs):
@@ -266,8 +270,20 @@ class BaseXedaScene(object):
             # 'delete': self.
             }
 
+        self._gridImage = None
+
     def setSceneSize(self, size):
         print size
+
+    def renderLayer(self, transf, layer, sceneRect, rect):
+        if not self._gridImage:
+            print 'processando layer', layer
+            self._gridImage = QtGui.QPixmap(rect.width(), rect.height())
+            self._gridImage.fill(QtGui.QColor(0, 0, 0, 0))
+            p = QtGui.QPainter(self._gridImage)
+            p.setTransform(transf)
+            p.drawLine(0,0,1000,1000)
+        return self._gridImage
 
     def addItem(self, item):
         self.items.append(item)
@@ -282,6 +298,8 @@ class BaseXedaScene(object):
     #     print 'removeItem'
     # def rotateItem(self, item):
     #     print 'rotateItem'
+
+
 
 
 
@@ -392,6 +410,8 @@ class BaseXedaItem(object):
     #     super(BaseXedaItem, self).setPos(x, y)
     #     self._x_x = x
     #     self._x_y = y
+
+
 
 
 

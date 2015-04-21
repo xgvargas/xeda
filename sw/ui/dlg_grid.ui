@@ -111,6 +111,9 @@
           </item>
           <item row="0" column="1">
            <widget class="QComboBox" name="sel_snap_comp">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="currentIndex">
              <number>3</number>
             </property>
@@ -201,6 +204,9 @@
           </item>
           <item row="0" column="2">
            <widget class="DimEdit" name="edt_snap_comp">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximumSize">
              <size>
               <width>66</width>
