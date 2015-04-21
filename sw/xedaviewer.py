@@ -51,6 +51,7 @@ class XedaViewer(QtGui.QWidget):
 
         self.setCursor(QtCore.Qt.BlankCursor)
         # self.unsetCursor()  #para mostrar o cursor denovo...
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.setMouseTracking(True)
         # self.scale(.1, -.1)
 
@@ -70,10 +71,17 @@ class XedaViewer(QtGui.QWidget):
 
         self.scale = .1
 
+        self.forcePaint = True   #ignore all cache in next paint
+
     def setScene(self, scene):
         self.scene = scene
         self.viewSize = QtCore.QSize(scene.cfg.dim[0], scene.cfg.dim[1])
         self.scene.setSceneSize(self.viewSize)
+        self.initShortcuts()
+
+    def repaint(self, force=False):
+        self.forcePaint = force
+        super(XedaViewer, self).repaint()
 
     def paintEvent(self, e):
         qp = QtGui.QPainter()
@@ -85,7 +93,7 @@ class XedaViewer(QtGui.QWidget):
                              -self.viewRect.left()*self.scale,
                              -self.viewRect.top()*self.scale)
 
-        if self.previousRect != self.viewRect:
+        if self.previousRect != self.viewRect or self.forcePaint:
             self.previousRect = QtCore.QRectF(self.viewRect)
             self._gridImage = QtGui.QPixmap(e.rect().width(), e.rect().height())
             p = QtGui.QPainter(self._gridImage)
@@ -96,22 +104,22 @@ class XedaViewer(QtGui.QWidget):
 
         qp.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
         for l in self.scene.proj.layers.active:
-            qp.drawPixmap(0, 0, self.scene.renderLayer(t, l, self.viewRect, e.rect()))
+            qp.drawPixmap(0, 0, self.scene.renderLayer(t, l, self.viewRect, e.rect(), self.forcePaint))
 
         qp.setTransform(t)
-        qp.setPen(QtGui.QPen(QtGui.QColor(128, 128, 255, 127),
-                  20,
-                  QtCore.Qt.SolidLine,
-                  QtCore.Qt.RoundCap,
-                  QtCore.Qt.RoundJoin))
-        qp.drawLine(1000, 1000, 2000, 3000)
-
-
         self._drawCursor(qp, self.viewRect)
+
+        # qp.setPen(QtGui.QPen(QtGui.QColor(128, 128, 255, 127),
+        #           20,
+        #           QtCore.Qt.SolidLine,
+        #           QtCore.Qt.RoundCap,
+        #           QtCore.Qt.RoundJoin))
+        # qp.drawLine(1000, 1000, 2000, 3000)
+
         qp.end()
+        self.forcePaint = False
 
     def _drawGrid(self, paint, rect):
-        print 'dezenhando o fundo....', rect
         paint.fillRect(rect, QtGui.QColor(*self.scene.cfg.colors.back))
 
         def doGrid(color, size):
@@ -136,6 +144,7 @@ class XedaViewer(QtGui.QWidget):
         if self.scene.proj.grid2: doGrid(self.scene.cfg.colors.grid2, self.scene.proj.grid2)
 
         paint.setPen(QtGui.QPen(QtGui.QColor(*self.scene.cfg.colors.origin), 0))
+        paint.setBrush(QtGui.QBrush(QtGui.QColor(*self.scene.cfg.colors.origin)))
         paint.drawEllipse(QtCore.QRectF(-25, -25, 50, 50))
 
 
@@ -169,10 +178,14 @@ class XedaViewer(QtGui.QWidget):
         else:
             event.ignore()
 
+    def enterEvent(self, event):
+        self.setFocus()
+
     def leaveEvent(self, event):
         super(XedaViewer, self).leaveEvent(event)
         self._snap_pos = None
         self.repaint()
+        self.clearFocus()
 
     def mousePressEvent(self, event):
         super(XedaViewer, self).mousePressEvent(event)
@@ -237,8 +250,109 @@ class XedaViewer(QtGui.QWidget):
                 if isinstance(i, BaseXedaItem):
                     i.inspect()
 
+    def initShortcuts(self):
+        self.shortcuts = []
+        for f, k in self.scene.cfg.shortcuts._d.iteritems():
+            if isinstance(k, (list, tuple)):
+                k = k[0]
+            self.shortcuts.append( (f, QtGui.QKeySequence(k)) )
+
     def keyPressEvent(self, event):
-        print event.text(), event.key(), event.modifiers(), event.type()
+        # print event.text(), event.key(), event.modifiers(), event.type()
+
+        k = QtGui.QKeySequence(event.modifiers()|event.key())
+        try:
+            print k.toString()
+        except: pass
+
+        if event.key() == QtCore.Qt.Key_Up: pass
+        elif event.key() == QtCore.Qt.Key_Down: pass
+        elif event.key() == QtCore.Qt.Key_Left: pass
+        elif event.key() == QtCore.Qt.Key_Right: pass
+        elif event.key() == QtCore.Qt.Key_PageUp: pass
+        elif event.key() == QtCore.Qt.Key_PageDown: pass
+        else:
+            for f, s in self.shortcuts:
+                if s.matches(k):
+                    if hasattr(self, f):
+                        getattr(self, f)()
+                    elif hasattr(self.scene, f):
+                        getattr(self.scene, f)()
+
+    def setOrigin(self, pos=None):
+        if pos is -1:
+            pos = QtCore.QPoint(0, 0)
+        elif not pos:
+            pos = self._snap_pos
+        self.origin = pos
+        self.repaint(True)
+        self.moveEvent.emit(self._snap_pos-self.origin)
+
+    def resetOrigin(self):
+        self.setOrigin(-1)
+
+    def setGrid(self, grid1, grid2, weak=False):
+        self.scene.proj.grid1 = grid1
+        self.scene.proj.grid2 = grid2
+        self.scene.proj.weakgrid = weak
+        self.repaint(True)
+
+    def setSnap(self, snap):
+        self.scene.proj.snap = snap
+        self.repaint()
+
+    def gridDialog(self):
+        ok, g = GridDialog.execute(self)
+        if ok:
+            self.setSnap(g['snap'])
+            self.setGrid(g['grid1'], g['grid2'], g['weak'])
+
+
+
+
+
+
+
+
+
+
+
+
+from dlg_grid_ui import *
+import smartside.signal as smartsignal
+
+
+class GridDialog(QtGui.QDialog, Ui_dlg_grid, smartsignal.SmartSignal):
+
+    def __init__(self, data, parent=None):
+        super(GridDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.auto_connect()
+
+    def _on_edt_snap_comp__textChanged(self): self.sel_snap_comp.setCurrentIndex(1)
+    def _on_edt_snap_all__textChanged(self): self.sel_snap_all.setCurrentIndex(1)
+    def _on_edt_grid1__textChanged(self): self.sel_grid1.setCurrentIndex(1)
+    def _on_edt_grid2__textChanged(self): self.sel_grid2.setCurrentIndex(1)
+    def _on_sel_snap_comp__currentIndexChanged(self):
+        if self.sender().currentIndex() == 1: self.edt_snap_comp.setFocus()
+    def _on_sel_snap_all__currentIndexChanged(self):
+        if self.sender().currentIndex() == 1: self.edt_snap_all.setFocus()
+    def _on_sel_grid1__currentIndexChanged(self):
+        if self.sender().currentIndex() == 1: self.edt_grid1.setFocus()
+    def _on_sel_grid2__currentIndexChanged(self):
+        if self.sender().currentIndex() == 1: self.edt_grid2.setFocus()
+
+    def _on_btn_ok__accepted(self):
+        self.accept()
+
+    @staticmethod
+    def execute(data, parent=None):
+        dialog = GridDialog(data, parent)
+        result = dialog.exec_()
+        return (result == QtGui.QDialog.Accepted), dict(grid1=100, grid2=1000, snap=25, weak=True)
+
+
+
 
 
 
@@ -274,15 +388,15 @@ class BaseXedaScene(object):
     def setSceneSize(self, size):
         print size
 
-    def renderLayer(self, transf, layer, sceneRect, rect):
-        if not self._gridImage or sceneRect != self._previousSceneRect:
+    def renderLayer(self, transf, layer, sceneRect, rect, force):
+        if not self._gridImage or sceneRect != self._previousSceneRect or force:
             self._previousSceneRect = QtCore.QRectF(sceneRect)
             print 'processando layer', layer
             self._gridImage = QtGui.QPixmap(rect.width(), rect.height())
             self._gridImage.fill(QtGui.QColor(0, 0, 0, 0))
             p = QtGui.QPainter(self._gridImage)
             p.setTransform(transf)
-            p.setPen(QtGui.QPen(QtGui.QColor(128, 128, 255, 128),
+            p.setPen(QtGui.QPen(QtGui.QColor(0, 0, 255, 64),
                   10,
                   QtCore.Qt.SolidLine,
                   QtCore.Qt.RoundCap,

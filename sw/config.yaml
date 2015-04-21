@@ -45,9 +45,9 @@ pcb:
             aux4:
             aux5:
     shortcuts:
-        grid: G
-        unit: Q
-        place:
+        gridDialog: G
+        setUnit: Q
+        placeItem:
             - P
             - text: S
               pad: P
@@ -55,13 +55,13 @@ pcb:
               line: L
               arc: R
               area: A
-        trace: T
-        delete: Del
-        clearsel: X
-        setorigin: O
-        resetorigin: R
-        rotate: Space
-        layer: L
+        traceLine: T
+        deleteItem: Del
+        clearSel: X
+        setOrigin: O
+        resetOrigin: R
+        rotateItem: Space
+        changeLayer: L
 
 sch:
     dim: [20000, 20000]
@@ -83,20 +83,20 @@ sch:
             port:
             art:
     shortcuts:
-        grid: G
-        unit: Q
-        place:
+        gridDialog: G
+        setUnit: Q
+        placeItem:
             - P
             - part: P
               power: O
               text: S
               line: L
               arc: R
-        trace: T
-        junction: J
-        delete: DEL
-        clearsel: X
-        setorigin: O
-        resetorigin: R
-        rotate: Space
+        placeJunction: J
+        traceLine: T
+        deleteItem: Del
+        clearSel: X
+        setOrigin: O
+        resetOrigin: R
+        rotateItem: Space
 ...
