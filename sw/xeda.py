@@ -10,7 +10,7 @@ import sys, os
 from xeda_ui import *   #this also imports QtGui and QtCore
 import smartside.signal as smartsignal
 from smartside import setAsApplication
-import xedagraphicsview as bbb
+import xedaviewer as bbb
 import xhelper
 import config
 
@@ -32,25 +32,25 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
             for y in xrange(0, 17000, 250):
                 a = bbb.PCBViaItem(dict(x=x, y=y))
                 self.scene.addItem(a)
-                if x%1000 == 0 and y%1000 == 0:
-                    a = bbb.PCBStringItem(dict(string='({:d},{:d})'.format(x, y), x=x, y=y))
-                    self.scene.addItem(a)
+                # if x%1000 == 0 and y%1000 == 0:
+                #     a = bbb.PCBStringItem(dict(string='({:d},{:d})'.format(x, y), x=x, y=y))
+                #     self.scene.addItem(a)
 
-        self.scene.addLine(1000, 1000, 2000, 3000,
-                           pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 100,
-                                          QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
-        self.scene.addLine(4000, 5000, 2000, 3000,
-                           pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 14,
-                                          QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
-        self.scene.addLine(4000, 5000, 4250, 6000,
-                           pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 14,
-                                          QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
-        self.scene22.addLine(2000, 3000, 5000, 3000,
-                           pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 100,
-                                          QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
-        self.scene.addLine(4000, 1000, 4000, 3500,
-                           pen=QtGui.QPen(QtGui.QColor(255, 128, 128, 127), 200,
-                                          QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
+        # self.scene.addLine(1000, 1000, 2000, 3000,
+        #                    pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 100,
+        #                                   QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
+        # self.scene.addLine(4000, 5000, 2000, 3000,
+        #                    pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 14,
+        #                                   QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
+        # self.scene.addLine(4000, 5000, 4250, 6000,
+        #                    pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 14,
+        #                                   QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
+        # self.scene22.addLine(2000, 3000, 5000, 3000,
+        #                    pen=QtGui.QPen(QtGui.QColor(128, 128, 255, 127), 100,
+        #                                   QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
+        # self.scene.addLine(4000, 1000, 4000, 3500,
+        #                    pen=QtGui.QPen(QtGui.QColor(255, 128, 128, 127), 200,
+        #                                   QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
 
         self.auto_connect()
 
@@ -61,8 +61,8 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
     def _on_action_Console__triggered(self):
         self.dock_console.show()
 
-    def _on_gpv_pcb__moveEvent(self, e):
-        self.status.showMessage('x: {:.1f} y: {:.1f}'.format(e.x, e.y), 2000)
+    def _on_view_pcb__moveEvent(self, e):
+        self.status.showMessage('x: {:.1f} y: {:.1f}'.format(e.x(), e.y()))
 
 
 ######################################################################
