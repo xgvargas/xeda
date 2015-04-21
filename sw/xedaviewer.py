@@ -158,6 +158,11 @@ class XedaViewer(QtGui.QWidget):
             else:
                 if self.scale > .04: self.scale /= factor
 
+            self.viewRect.setLeft(min(self.viewSize.width()-self.viewRect.width(),
+                                  max(0, self._mouse_pos.x()-event.pos().x()/self.scale)))
+            self.viewRect.setTop(min(self.viewSize.height()-self.viewRect.height(),
+                                 max(0, self._mouse_pos.y()-event.pos().y()/self.scale)))
+
             self.repaint()
 
             event.accept()
@@ -193,8 +198,6 @@ class XedaViewer(QtGui.QWidget):
 
     def mouseMoveEvent(self, event):
         super(XedaViewer, self).mouseMoveEvent(event)
-        # self._mouse_pos = Point._make(self.mapToScene(event.pos()).toTuple())
-        # self._mouse_pos = Point(*self.mapToScene(event.pos()).toTuple())
         self._mouse_pos = self.mapToScene(event.pos())
         n = self.scene.proj.snap
         self._snap_pos = QtCore.QPoint((self._mouse_pos.x()//n)*n, (self._mouse_pos.y()//n)*n)
@@ -209,7 +212,6 @@ class XedaViewer(QtGui.QWidget):
                                       max(0, self.viewRect.left()-p.x()/self.scale)))
             self.viewRect.setTop(min(self.viewSize.height()-self.viewRect.height(),
                                      max(0, self.viewRect.top()-p.y()/self.scale)))
-            print '-->',self.viewRect
             self.repaint()
             event.accept()
         else:
