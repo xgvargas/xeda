@@ -61,8 +61,10 @@ class XedaViewer(QtGui.QWidget):
 
         self.scene = None
 
+        self.origin = QtCore.QPoint(2000, 1000)
+
         self.viewSize = QtCore.QSize(0, 0)
-        self.viewRect = QtCore.QRect(0, 0, 0, 0)
+        self.viewRect = QtCore.QRectF(0, 0, 0, 0)
 
         self.previousRect = None
 
@@ -79,14 +81,19 @@ class XedaViewer(QtGui.QWidget):
         qp.begin(self)
         self.viewRect.setWidth(e.rect().width()/self.scale),
         self.viewRect.setHeight(e.rect().height()/self.scale)
-        t = QtGui.QTransform(self.scale, 0, 0, self.scale, -self.viewRect.left(), -self.viewRect.top())
+
+        t = QtGui.QTransform(self.scale, 0, 0, self.scale,
+                             -self.viewRect.left()*self.scale,
+                             -self.viewRect.top()*self.scale)
 
         if self.previousRect != self.viewRect:
-            self.previousRect = QtCore.QRect(self.viewRect)
+            self.previousRect = QtCore.QRectF(self.viewRect)
             self._gridImage = QtGui.QPixmap(e.rect().width(), e.rect().height())
             p = QtGui.QPainter(self._gridImage)
+            # p.setTransform(QtGui.QTransform(self.scale, 0, 0, self.scale, 0, 0))
             p.setTransform(t)
-            self._drawGrid(p, self.viewRect)
+            p.translate(self.origin)
+            self._drawGrid(p, self.viewRect.translated(-self.origin.x(), -self.origin.y()))
         qp.drawPixmap(0, 0, self._gridImage)
 
         qp.setTransform(t)
@@ -104,7 +111,7 @@ class XedaViewer(QtGui.QWidget):
         paint.fillRect(rect, QtGui.QColor(*self.scene.cfg.colors.back))
 
         def doGrid(color, size):
-            if size*self.scale > 5:    #grid is too small, so ignore it
+            if size*self.scale > 5:    # if grid is too small, ignore it
                 lines = []
                 x = rect.left()-(rect.left()%size)
                 end = rect.right()
@@ -120,8 +127,12 @@ class XedaViewer(QtGui.QWidget):
                 paint.setPen(QtGui.QPen(QtGui.QColor(*color), int(self.scene.proj.weakgrid)))
                 paint.drawLines(lines)
 
+
         if self.scene.proj.grid1: doGrid(self.scene.cfg.colors.grid1, self.scene.proj.grid1)
         if self.scene.proj.grid2: doGrid(self.scene.cfg.colors.grid2, self.scene.proj.grid2)
+
+        paint.setPen(QtGui.QPen(QtGui.QColor(*self.scene.cfg.colors.origin), 0))
+        paint.drawEllipse(QtCore.QRectF(-25, -25, 50, 50))
 
 
     def _drawCursor(self, paint, rect):
@@ -171,8 +182,12 @@ class XedaViewer(QtGui.QWidget):
             event.accept()
 
         elif event.button() == QtCore.Qt.MouseButton.RightButton:
-            pass
-            #TODO mostra algum menu
+            m = QtGui.QMenu(self)
+            m.addAction('texte')
+            m.addAction('texte')
+            m.addSeparator()
+            m.addAction('teste com xix??')
+            m.exec_(event.globalPos())
         else:
             event.ignore()
 
@@ -184,7 +199,7 @@ class XedaViewer(QtGui.QWidget):
         n = self.scene.proj.snap
         self._snap_pos = QtCore.QPoint((self._mouse_pos.x()//n)*n, (self._mouse_pos.y()//n)*n)
         # self.moveEvent.emit(self._mouse_pos)
-        self.moveEvent.emit(self._snap_pos)
+        self.moveEvent.emit(self._snap_pos-self.origin)
         self.repaint()
         #self._discoverItem(None) #TODO quando tiver mas de um item isso sera assincrono.... fudeu
         if self._pan_pos:
@@ -194,7 +209,7 @@ class XedaViewer(QtGui.QWidget):
                                       max(0, self.viewRect.left()-p.x()/self.scale)))
             self.viewRect.setTop(min(self.viewSize.height()-self.viewRect.height(),
                                      max(0, self.viewRect.top()-p.y()/self.scale)))
-            print self.viewRect
+            print '-->',self.viewRect
             self.repaint()
             event.accept()
         else:

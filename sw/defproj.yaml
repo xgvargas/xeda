@@ -17,7 +17,7 @@ pcb:
     grid1: 100
     grid2: 1000
     weakgrid: true
-    snap: 20
+    snap: 10
     layers:
         active: [0, 32, 37, 38, 41]
         pairs:
@@ -35,8 +35,8 @@ pcb:
 
 sch:
     units: mm
-    grid1: 0
-    grid2: 100
+    grid1: 100
+    grid2: 1000
     weakgrid: false
     snap: 50
 ...
