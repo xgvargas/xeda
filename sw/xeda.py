@@ -30,8 +30,9 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
 
         for x in xrange(0, 15000, 250):
             for y in xrange(0, 17000, 250):
-                a = bbb.PCBViaItem(dict(x=x, y=y))
-                self.scene.addItem(a)
+                self.scene.addVia(dict(x=x, y=y))
+                # a = bbb.PCBViaItem(dict(x=x, y=y))
+                # self.scene.addItem(a)
                 # if x%1000 == 0 and y%1000 == 0:
                 #     a = bbb.PCBStringItem(dict(string='({:d},{:d})'.format(x, y), x=x, y=y))
                 #     self.scene.addItem(a)

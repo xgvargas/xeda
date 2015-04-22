@@ -16,6 +16,7 @@ layersId = {
     3: 'tglue',
     4: 'tsilk',
     5: 'tmask',
+    6: 'drill',
     10: 'top',
     11: 'l1',
     12: 'l2',
@@ -230,8 +231,15 @@ class XedaViewer(QtGui.QWidget):
             i = self._discoverItem(None)
             #TODO quando tiver mas de um item isso sera assincrono.... fudeu
 
-            #TODO prepara para arrastar....
-            #se item selecionado faz parte de uma selecao tem que mover toda ela
+            # um click sem nada abaixo inicia um rubber para selecionar items
+            # com um item abaixo coloca ele em modo de destaque
+            # com um item abaixo e shift alterna estado dele na selecao
+            # com um item e move sem soltar, move o item ou a selecao caso ele faca parte delta
+            # se tiver mais de um item entao motra menu perguntando qual
+            # ignora tal menu se algum dos items estiver na lista de prioridades
+
+
+
         elif event.button() == QtCore.Qt.MouseButton.MiddleButton:
             self._pan_pos = event.pos()
             event.accept()
@@ -339,7 +347,7 @@ class XedaViewer(QtGui.QWidget):
         self.repaint()
 
     def gridDialog(self):
-        ok, g = GridDialog.execute(self)
+        ok, g = GridDialog.execute({}, self)
         if ok:
             self.setSnap(g['snap'])
             self.setGrid(g['grid1'], g['grid2'], g['weak'])
@@ -433,19 +441,12 @@ class BaseXedaScene(object):
 
         self.items = []
 
-        self.procNames = {
-            # 'grid': self.setGrid,
-            # 'clearsel': self.clearSelection,
-            # 'setorigin': self.setOrigin,
-            # 'resetorigin': self.resetOrigin,
-            # 'rotate': self.
-            # 'delete': self.
-            }
-
         self._layerImageImage = {}
 
+        self.size = QtCore.QSize(0, 0)
+
     def setSceneSize(self, size):
-        print size
+        self.size = size
 
     def renderLayer(self, transf, layer, sceneRect, rect, force):
         if layer not in self._layerImageImage or sceneRect != self._layerImageImage[layer][1] or force:
@@ -457,6 +458,13 @@ class BaseXedaScene(object):
             p.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
             p.setTransform(transf)
             self._layerImageImage[layer] = (img, QtCore.QRectF(sceneRect))
+
+            toshow = self.getItems(sceneRect)
+
+            for i in toshow:
+                if i._x_layer in (-1, layer):
+                    i.paint(p, layer)
+
             if layer == 10:
                 p.setPen(QtGui.QPen(QtGui.QColor(128, 128, 255, 127),
                       10,
@@ -473,19 +481,39 @@ class BaseXedaScene(object):
                 p.drawLine(0,0,1000,1000)
         return self._layerImageImage[layer][0]
 
+    def invalidate(self, layer):
+        if layer == -1:
+            pass
+            #TODO invalida geral!
+        # print 'marcando layer como sujo: ', layer
+
     def addItem(self, item):
         self.items.append(item)
+        self.invalidate(item._x_layer)
 
-    def setOrigin(self, **kwargs):
-        print 'setOrigin'
-    def resetOrigin(self, **kwargs):
-        print 'resetOrigin'
-    def clearSelection(self, **kwargs):
-        print 'clearSelection'
-    # def removeItem(self, item):
-    #     print 'removeItem'
-    # def rotateItem(self, item):
-    #     print 'rotateItem'
+    def getItems(self, rect=None):
+        if rect == None:
+            rect = QtCore.QRect(0, 0, *self.size)
+
+        inside = []
+        for i in self.items:
+            if rect.contains(i.getBounding()):
+                inside.append(i)
+        print 'total items: ', len(inside)
+        return inside
+
+    def removeItem(self, item):
+        print 'removeItem'
+
+    def rotateItem(self, item):
+        print 'rotateItem'
+
+    def getBounding(self):
+        b = QtCore.QRect()
+        for i in self.items:
+            b.unite(i.bounding())
+        print 'tamanho total: ', b
+        return b
 
 
 
@@ -503,19 +531,14 @@ class PCBScene(BaseXedaScene):
     def __init__(self, *args, **kwargs):
         super(PCBScene, self).__init__(*args, **kwargs)
 
-        self.procNames.update({
-            # 'text': self.
-            # 'pad': self.
-            # 'via': self.
-            # 'line': self.
-            # 'arc': self.
-            # 'area': self.
-            # 'trace': self.
-            'place': self.cmdPlace,
-            })
-
     def cmdPlace(self, **kwargs):
         print 'place!!!'
+
+    def addVia(self, data, mode=1):
+        self.addItem(PCBViaItem(self, data))
+
+    # def addString(self, data, mode=1):
+    #     self.addItem(PCBStringItem(data))
 
     # def addText(self, i):
     #     print 'addText'
@@ -551,53 +574,70 @@ class PCBScene(BaseXedaScene):
 
 class BaseXedaItem(object):
 
-    def __init__(self, data=None):
+    def __init__(self, parent, data=None):
         super(BaseXedaItem, self).__init__()
 
         self._x_selected = False
+        self._x_x = 0
+        self._x_y = 0
+
+        self.parent = parent
+
+        self.isGhost = False
+        self.inEdit = False
 
         if data:
             self.unpack(data)
 
-    def bounding(self):
+    def getBounding(self):
         raise NotImplementedError()
 
-    def paint(self, painter, option, widget):
+    def paint(self, painter, layer):
+        if self._x_selected:
+            self.paintSelected(painter, layer)
+        elif self.inEdit:
+            self.paintEdit(painter, layer)
+        elif self.isGhost:
+            self.paintGhost(painter, layer)
+        else:
+            self.paintNormal(painter, layer)
+
+    def paintNormal(self, painter, layer):
         raise NotImplementedError()
+
+    def paintSelected(self, painter, layer): pass
+    def paintEdit(self, painter, layer): pass
+    def paintGhost(self, painter, layer): pass
 
     def inspect(self):
         ok, data = self.myInspector.inspect(self.pack())
         if ok:
             self.unpack(data)
 
+    def invalidate(self):
+        self.parent.invalidate(self._x_layer)
+
     def setPos(self, x, y):
-        pass
-        # print x, y
+        self._x_x = x
+        self._x_y = y
+        self.invalidate()
 
     def pack(self):
         d = {}
         for m in dir(self):
             if m.startswith('_x_'):
                 d[m[3:]] = getattr(self, m)
-        d['x'] = self.x()
-        d['y'] = self.y()
+        # d['x'] = self.x()
+        # d['y'] = self.y()
         return d
 
     def unpack(self, data):
-        self.setPos(data['x'], data['y'])
-        del data['x']
-        del data['y']
+        # self.setPos(data['x'], data['y'])
+        # del data['x']
+        # del data['y']
         for k, v in data.items():
             setattr(self, '_x_'+k, v)
-        # self.invalidate()
-
-    def toGerber(self):
-        raise NotImplementedError()
-
-    # def setPos(self, x, y):
-    #     super(BaseXedaItem, self).setPos(x, y)
-    #     self._x_x = x
-    #     self._x_y = y
+        self.invalidate()
 
 
 
@@ -704,6 +744,7 @@ class PCBViaInspector(BaseXedaInspector, Ui_dlg_via):
 class PCBViaItem(BaseXedaItem):
 
     _x_name = 'VIA'
+    _x_layer = 6
     myInspector = PCBViaInspector
 
     def __init__(self, *args, **kwargs):
@@ -719,12 +760,29 @@ class PCBViaItem(BaseXedaItem):
 
         super(PCBViaItem, self).__init__(*args, **kwargs)
 
-    def bounding(self):
-        return QtCore.QRectF(-self._x_od/2, -self._x_od/2, self._x_od, self._x_od)
+    def getBounding(self):
+        r = QtCore.QRectF(-self._x_od/2, -self._x_od/2, self._x_od, self._x_od)
+        return r.translated(self._x_x, self._x_y)
 
-    def paint(self, painter, option, widget):
-        painter.setPen(QtGui.QPen(QtGui.QColor(200, 200, 200, 127), (self._x_od-self._x_id)/2))
-        r = self._x_od-(self._x_od-self._x_id)/2
-        painter.drawEllipse(QtCore.QRectF(-r/2, -r/2, r, r))
+    def _drawVia(self, p, color):
+        p.setPen(QtGui.QPen(QtCore.Qt.NoPen))
+        p.setBrush(QtGui.QBrush(color))
+        r = self.getBounding()
+        p.drawEllipse(r)
+        p.drawEllipse(QtCore.QRectF(-self._x_id/2, -self._x_id/2, self._x_id, self._x_id).translated(self._x_x, self._x_y))
+
+        p.setPen(QtGui.QPen('red'))
+        p.drawText(r, QtCore.Qt.AlignCenter, 'NOME DA NET')
+
+        p.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+        p.setPen(QtGui.QPen(color))
+        p.drawEllipse(QtCore.QRectF(-self._x_od/2-10, -self._x_od/2-10, self._x_od+20, self._x_od+20).translated(self._x_x, self._x_y))
+
+    def paintNormal(self, painter, layer):
+        self._drawVia(painter, QtGui.QColor(200, 200, 200, 127))
+
+    def paintSelected(self, painter, layer): pass
+    def paintEdit(self, painter, layer): pass
+    def paintGhost(self, painter, layer): pass
 
 
