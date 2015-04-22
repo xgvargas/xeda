@@ -19,7 +19,7 @@ pcb:
     weakgrid: true
     snap: 10
     layers:
-        active: [0, 32, 37, 38, 41]
+        active: [44, 42, 10, 4, 0]
         pairs:
             - [0, 32]
     drc:

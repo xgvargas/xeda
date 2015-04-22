@@ -432,9 +432,9 @@
          </layout>
         </item>
         <item>
-         <widget class="QCheckBox" name="chk_strong">
+         <widget class="QCheckBox" name="chk_weak">
           <property name="text">
-           <string>Use strong grid lines</string>
+           <string>Use weak grid lines</string>
           </property>
          </widget>
         </item>

@@ -62,7 +62,10 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
         self.dock_console.show()
 
     def _on_view_pcb__moveEvent(self, e):
-        self.status.showMessage('x: {:.1f} y: {:.1f}'.format(e.x(), e.y()))
+        self.status.showMessage('1- x: {:.1f} y: {:.1f}'.format(e.x(), e.y()))
+
+    def _on_view_sch__moveEvent(self, e):
+        self.status.showMessage('2- x: {:.1f} y: {:.1f}'.format(e.x(), e.y()))
 
 
 ######################################################################

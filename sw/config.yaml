@@ -14,10 +14,10 @@ libs:
 pcb:
     dim: [20000, 20000]
     colors:
-        back: [0, 0, 0]
+        back: [0, 0, 0, 0]
         grid1: [64, 64, 64]
         grid2: [222, 222, 222]
-        origin: [255, 0, 0]
+        origin: [255, 0, 0, 180]
         guide: [255, 255, 255]
         selection: [255, 255, 255]
         layer:
@@ -69,7 +69,7 @@ sch:
         back: [245, 239, 191]
         grid1: [80, 80, 208]
         grid2: [222, 30, 60]
-        origin: [255, 0, 0]
+        origin: [255, 0, 0, 180]
         guide: [0, 0, 110]
         selection: [255, 255, 255]
         item:

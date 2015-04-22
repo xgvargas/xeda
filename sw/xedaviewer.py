@@ -10,35 +10,75 @@ from collections import namedtuple
 
 
 layersId = {
-    0: 'top',
-    1: 'l1',
-    2: 'l2',
-    3: 'l3',
-    4: 'l4',
-    5: 'l5',
-    6: 'l6',
-    32: 'bottom',
-    33: 'tpaste',
-    34: 'bpaste',
-    35: 'tglue',
-    36: 'bglue',
-    37: 'tsilk',
-    38: 'bsilk',
-    39: 'tmask',
-    40: 'bmask',
-    41: 'edge',
-    42: 'aux1',
-    43: 'aux2',
-    44: 'aux3',
-    45: 'aux4',
-    46: 'aux5',
-    47: 'keepout'
+    0: 'edge',
+    1: 'keepout',
+    2: 'tpaste',
+    3: 'tglue',
+    4: 'tsilk',
+    5: 'tmask',
+    10: 'top',
+    11: 'l1',
+    12: 'l2',
+    13: 'l3',
+    14: 'l4',
+    15: 'l5',
+    16: 'l6',
+    42: 'bottom',
+    43: 'bmask',
+    44: 'bsilk',
+    45: 'bglue',
+    46: 'bpaste',
+    47: 'aux1',
+    48: 'aux2',
+    49: 'aux3',
+    50: 'aux4',
+    51: 'aux5'
     }
 
 layersId.update({v: k for k, v in layersId.iteritems()})
 
 
 Point = namedtuple('Point', 'x y')
+
+
+def dimConvert(val, out='mils', default=None):
+
+    if not default:
+        default = 'mils'   #TODO ler isso da configuracao!!!!
+
+    if isinstance(val, (str, unicode)):
+        g = re.match(r'^\s*([+-]?\d+[,.]?\d*|[+-]?[.,]\d+)\s*(mm|in|mils?|cm)?\s*$', val)
+        if g:
+            v = float(g.group(1))
+            unit = g.group(2) if g.group(2) else default
+        else:
+            return 0
+    else:
+        v = float(val)
+        unit = default
+
+    if unit == 'mil' or unit == 'mils': pass
+    elif unit == 'in': v *= 1000.0
+    elif unit == 'mm': v *= 39.37
+    elif unit == 'cm': v *= 393.7
+    else: v = 0
+
+    if out == 'mil' or out == 'mils': return v
+    elif out == 'in': return v/1000.0
+    elif out == 'mm': return v/39.37
+    elif out == 'cm': return v/393.7
+
+    return 0
+
+def dimConvertText(val, out='mils'):
+    return '{:.2f} {}'.format(dimConvert(val, out), out)
+
+
+
+
+
+
+
 
 
 class XedaViewer(QtGui.QWidget):
@@ -86,6 +126,8 @@ class XedaViewer(QtGui.QWidget):
     def paintEvent(self, e):
         qp = QtGui.QPainter()
         qp.begin(self)
+        # qp.setRenderHint(QtGui.QPainter.Antialiasing)
+
         self.viewRect.setWidth(e.rect().width()/self.scale),
         self.viewRect.setHeight(e.rect().height()/self.scale)
 
@@ -97,24 +139,19 @@ class XedaViewer(QtGui.QWidget):
             self.previousRect = QtCore.QRectF(self.viewRect)
             self._gridImage = QtGui.QPixmap(e.rect().width(), e.rect().height())
             p = QtGui.QPainter(self._gridImage)
+            # p.setRenderHint(QtGui.QPainter.Antialiasing)
             p.setTransform(t)
             p.translate(self.origin)
             self._drawGrid(p, self.viewRect.translated(-self.origin))
         qp.drawPixmap(0, 0, self._gridImage)
 
-        qp.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
+        # qp.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
         for l in self.scene.proj.layers.active:
             qp.drawPixmap(0, 0, self.scene.renderLayer(t, l, self.viewRect, e.rect(), self.forcePaint))
 
         qp.setTransform(t)
+        # qp.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
         self._drawCursor(qp, self.viewRect)
-
-        # qp.setPen(QtGui.QPen(QtGui.QColor(128, 128, 255, 127),
-        #           20,
-        #           QtCore.Qt.SolidLine,
-        #           QtCore.Qt.RoundCap,
-        #           QtCore.Qt.RoundJoin))
-        # qp.drawLine(1000, 1000, 2000, 3000)
 
         qp.end()
         self.forcePaint = False
@@ -328,6 +365,7 @@ class GridDialog(QtGui.QDialog, Ui_dlg_grid, smartsignal.SmartSignal):
         super(GridDialog, self).__init__(parent)
         self.setupUi(self)
         self.auto_connect()
+        self.data = None
 
     def _on_edt_snap_comp__textChanged(self): self.sel_snap_comp.setCurrentIndex(1)
     def _on_edt_snap_all__textChanged(self): self.sel_snap_all.setCurrentIndex(1)
@@ -343,13 +381,35 @@ class GridDialog(QtGui.QDialog, Ui_dlg_grid, smartsignal.SmartSignal):
         if self.sender().currentIndex() == 1: self.edt_grid2.setFocus()
 
     def _on_btn_ok__accepted(self):
+        self.data = {}
+
+        self.data['snap'] = dimConvert(self.sel_snap_all.currentText())
+        if self.data['snap'] == 0:
+            self.data['snap'] = dimConvert(self.edt_snap_all.text())
+            if self.data['snap'] == 0:
+                return
+
+        self.data['grid1'] = dimConvert(self.sel_grid1.currentText())
+        if self.data['grid1'] == 0:
+            self.data['grid1'] = dimConvert(self.edt_grid1.text())
+            if self.data['grid1'] == 0:
+                return
+
+        self.data['grid2'] = dimConvert(self.sel_grid2.currentText())
+        if self.data['grid2'] == 0:
+            self.data['grid2'] = dimConvert(self.edt_grid2.text())
+            if self.data['grid2'] == 0:
+                return
+
+        self.data['weak'] = self.chk_weak.isChecked()
+
         self.accept()
 
     @staticmethod
     def execute(data, parent=None):
         dialog = GridDialog(data, parent)
         result = dialog.exec_()
-        return (result == QtGui.QDialog.Accepted), dict(grid1=100, grid2=1000, snap=25, weak=True)
+        return (result == QtGui.QDialog.Accepted), dialog.data
 
 
 
@@ -382,27 +442,36 @@ class BaseXedaScene(object):
             # 'delete': self.
             }
 
-        self._gridImage = None
-        self._previousSceneRect = None
+        self._layerImageImage = {}
 
     def setSceneSize(self, size):
         print size
 
     def renderLayer(self, transf, layer, sceneRect, rect, force):
-        if not self._gridImage or sceneRect != self._previousSceneRect or force:
-            self._previousSceneRect = QtCore.QRectF(sceneRect)
+        if layer not in self._layerImageImage or sceneRect != self._layerImageImage[layer][1] or force:
             print 'processando layer', layer
-            self._gridImage = QtGui.QPixmap(rect.width(), rect.height())
-            self._gridImage.fill(QtGui.QColor(0, 0, 0, 0))
-            p = QtGui.QPainter(self._gridImage)
+            img = QtGui.QPixmap(rect.width(), rect.height())
+            img.fill(QtGui.QColor(0, 0, 0, 0))
+            p = QtGui.QPainter(img)
+            p.setRenderHint(QtGui.QPainter.Antialiasing)
+            p.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
             p.setTransform(transf)
-            p.setPen(QtGui.QPen(QtGui.QColor(0, 0, 255, 64),
-                  10,
-                  QtCore.Qt.SolidLine,
-                  QtCore.Qt.RoundCap,
-                  QtCore.Qt.RoundJoin))
-            p.drawLine(0,0,1000,1000)
-        return self._gridImage
+            self._layerImageImage[layer] = (img, QtCore.QRectF(sceneRect))
+            if layer == 10:
+                p.setPen(QtGui.QPen(QtGui.QColor(128, 128, 255, 127),
+                      10,
+                      QtCore.Qt.SolidLine,
+                      QtCore.Qt.RoundCap,
+                      QtCore.Qt.RoundJoin))
+                p.drawLine(1000, 1000, 2000, 3000)
+            if layer == 42:
+                p.setPen(QtGui.QPen(QtGui.QColor(255, 128, 128, 127),
+                      20,
+                      QtCore.Qt.SolidLine,
+                      QtCore.Qt.RoundCap,
+                      QtCore.Qt.RoundJoin))
+                p.drawLine(0,0,1000,1000)
+        return self._layerImageImage[layer][0]
 
     def addItem(self, item):
         self.items.append(item)
