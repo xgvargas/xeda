@@ -375,10 +375,10 @@ class GridDialog(QtGui.QDialog, Ui_dlg_grid, smartsignal.SmartSignal):
         self.auto_connect()
         self.data = None
 
-    def _on_edt_snap_comp__textChanged(self): self.sel_snap_comp.setCurrentIndex(1)
-    def _on_edt_snap_all__textChanged(self): self.sel_snap_all.setCurrentIndex(1)
-    def _on_edt_grid1__textChanged(self): self.sel_grid1.setCurrentIndex(1)
-    def _on_edt_grid2__textChanged(self): self.sel_grid2.setCurrentIndex(1)
+    def _on_edt_snap_comp__textChanged(self): self.sel_snap_comp.setCurrentIndex(0)
+    def _on_edt_snap_all__textChanged(self): self.sel_snap_all.setCurrentIndex(0)
+    def _on_edt_grid1__textChanged(self): self.sel_grid1.setCurrentIndex(0)
+    def _on_edt_grid2__textChanged(self): self.sel_grid2.setCurrentIndex(0)
     def _on_sel_snap_comp__currentIndexChanged(self):
         if self.sender().currentIndex() == 1: self.edt_snap_comp.setFocus()
     def _on_sel_snap_all__currentIndexChanged(self):
@@ -441,7 +441,7 @@ class BaseXedaScene(object):
 
         self.items = []
 
-        self._layerImageImage = {}
+        self._layerImage = {}
 
         self.size = QtCore.QSize(0, 0)
 
@@ -449,7 +449,7 @@ class BaseXedaScene(object):
         self.size = size
 
     def renderLayer(self, transf, layer, sceneRect, rect, force):
-        if layer not in self._layerImageImage or sceneRect != self._layerImageImage[layer][1] or force:
+        if layer not in self._layerImage or sceneRect != self._layerImage[layer][1] or force:
             print 'processando layer', layer
             img = QtGui.QPixmap(rect.width(), rect.height())
             img.fill(QtGui.QColor(0, 0, 0, 0))
@@ -457,7 +457,7 @@ class BaseXedaScene(object):
             p.setRenderHint(QtGui.QPainter.Antialiasing)
             p.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
             p.setTransform(transf)
-            self._layerImageImage[layer] = (img, QtCore.QRectF(sceneRect))
+            self._layerImage[layer] = (img, QtCore.QRectF(sceneRect))
 
             toshow = self.getItems(sceneRect)
 
@@ -479,13 +479,16 @@ class BaseXedaScene(object):
                       QtCore.Qt.RoundCap,
                       QtCore.Qt.RoundJoin))
                 p.drawLine(0,0,1000,1000)
-        return self._layerImageImage[layer][0]
+        return self._layerImage[layer][0]
 
     def invalidate(self, layer):
-        if layer == -1:
-            pass
-            #TODO invalida geral!
         # print 'marcando layer como sujo: ', layer
+        if layer == -1:
+            self._layerImage = {}
+        if layer in self._layerImage:
+            del self._layerImage[layer]
+
+        #TODO forcar repaint do viewer
 
     def addItem(self, item):
         self.items.append(item)
@@ -772,7 +775,7 @@ class PCBViaItem(BaseXedaItem):
         p.drawEllipse(QtCore.QRectF(-self._x_id/2, -self._x_id/2, self._x_id, self._x_id).translated(self._x_x, self._x_y))
 
         p.setPen(QtGui.QPen('red'))
-        p.drawText(r, QtCore.Qt.AlignCenter, 'NOME DA NET')
+        p.drawText(r, QtCore.Qt.AlignCenter, 'SGND')
 
         p.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
         p.setPen(QtGui.QPen(color))

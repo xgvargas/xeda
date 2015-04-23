@@ -37,16 +37,11 @@
           <item row="1" column="1">
            <widget class="QComboBox" name="sel_snap_all">
             <property name="currentIndex">
-             <number>2</number>
+             <number>0</number>
             </property>
             <property name="maxVisibleItems">
              <number>15</number>
             </property>
-            <item>
-             <property name="text">
-              <string>No snap</string>
-             </property>
-            </item>
             <item>
              <property name="text">
               <string>Custom</string>
