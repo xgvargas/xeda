@@ -5,11 +5,11 @@
 #--------------------------------------------------------------------------
 
 
-UIC = c:\Python27\scripts\pyside-uic
-# UIC = venv\Scripts\pyside-uic
+# UIC = c:\Python27\scripts\pyside-uic
+UIC = $(VIRTUAL_ENV)\Scripts\pyside-uic
 
-RCC = c:\Python27\Lib\site-packages\PySide\pyside-rcc
-# RCC = venv\Lib\site-packages\PySide\pyside-rcc -py3
+# RCC = c:\Python27\Lib\site-packages\PySide\pyside-rcc
+RCC = $(VIRTUAL_ENV)\Lib\site-packages\PySide\pyside-rcc -py3
 
 NIX = $(ProgramFilesX86)\git\bin
 

@@ -294,6 +294,10 @@ class XedaViewer(QtGui.QWidget):
             if event.button() == QtCore.Qt.MouseButton.LeftButton:
                 if isinstance(i, BaseXedaItem):
                     i.inspect()
+            elif event.button() == QtCore.Qt.MouseButton.MiddleButton:
+                pass
+
+                #TODO mostra uma regua, com hip e angulo
 
     def initShortcuts(self):
         self.shortcuts = []
