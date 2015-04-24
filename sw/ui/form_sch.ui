@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>702</width>
-    <height>216</height>
+    <width>687</width>
+    <height>118</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,6 +16,9 @@
   <property name="windowIcon">
    <iconset resource="xeda.qrc">
     <normaloff>:/base/xeda.ico</normaloff>:/base/xeda.ico</iconset>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -59,7 +62,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>702</width>
+     <width>687</width>
      <height>21</height>
     </rect>
    </property>
@@ -83,7 +86,6 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
-    <addaction name="separator"/>
     <addaction name="action_Grid_Snap"/>
     <addaction name="separator"/>
     <addaction name="actionSet_Libraries"/>
@@ -116,6 +118,13 @@
      <string>&amp;View</string>
     </property>
     <addaction name="action_Inspector"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoom_In"/>
+    <addaction name="actionZoom_Out"/>
+    <addaction name="actionZoom_Fit"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_Origin"/>
+    <addaction name="action_Reset_Origin"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_View"/>
@@ -267,6 +276,9 @@
    <property name="toolTip">
     <string>Show Inspector window</string>
    </property>
+   <property name="shortcut">
+    <string>P</string>
+   </property>
   </action>
   <action name="actionP_ower">
    <property name="text">
@@ -324,6 +336,31 @@
   <action name="action_Text">
    <property name="text">
     <string>&amp;Text</string>
+   </property>
+  </action>
+  <action name="actionZoom_In">
+   <property name="text">
+    <string>Zoom I&amp;n</string>
+   </property>
+  </action>
+  <action name="actionZoom_Out">
+   <property name="text">
+    <string>Zoo&amp;m Out</string>
+   </property>
+  </action>
+  <action name="actionZoom_Fit">
+   <property name="text">
+    <string>Zoom &amp;Fit</string>
+   </property>
+  </action>
+  <action name="actionSet_Origin">
+   <property name="text">
+    <string>Set &amp;Origin</string>
+   </property>
+  </action>
+  <action name="action_Reset_Origin">
+   <property name="text">
+    <string>&amp;Reset Origin</string>
    </property>
   </action>
  </widget>

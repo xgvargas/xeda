@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>688</width>
-    <height>143</height>
+    <width>703</width>
+    <height>122</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,6 +16,9 @@
   <property name="windowIcon">
    <iconset resource="xeda.qrc">
     <normaloff>:/base/xeda.ico</normaloff>:/base/xeda.ico</iconset>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -58,7 +61,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>688</width>
+     <width>703</width>
      <height>21</height>
     </rect>
    </property>
@@ -124,6 +127,13 @@
     </property>
     <addaction name="action_Inspector"/>
     <addaction name="action_Layers"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoom_Iin"/>
+    <addaction name="actionZoo_m_Out"/>
+    <addaction name="actionZoom_Fit"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_Origin"/>
+    <addaction name="action_Reset_Origin"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_View"/>
@@ -363,6 +373,31 @@
   <action name="actionAr_ea">
    <property name="text">
     <string>Ar&amp;ea</string>
+   </property>
+  </action>
+  <action name="actionZoom_Iin">
+   <property name="text">
+    <string>Zoom I&amp;n</string>
+   </property>
+  </action>
+  <action name="actionZoo_m_Out">
+   <property name="text">
+    <string>Zoo&amp;m Out</string>
+   </property>
+  </action>
+  <action name="actionZoom_Fit">
+   <property name="text">
+    <string>Zoom &amp;Fit</string>
+   </property>
+  </action>
+  <action name="actionSet_Origin">
+   <property name="text">
+    <string>Set &amp;Origin</string>
+   </property>
+  </action>
+  <action name="action_Reset_Origin">
+   <property name="text">
+    <string>&amp;Reset Origin</string>
    </property>
   </action>
  </widget>

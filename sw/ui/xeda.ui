@@ -6,16 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>718</width>
+    <width>694</width>
     <height>512</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>XEDA</string>
   </property>
   <property name="windowIcon">
    <iconset resource="xeda.qrc">
     <normaloff>:/base/xeda.ico</normaloff>:/base/xeda.ico</iconset>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -46,7 +49,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>718</width>
+     <width>694</width>
      <height>21</height>
     </rect>
    </property>
@@ -61,7 +64,7 @@
      <addaction name="action_Project"/>
      <addaction name="action_Schematic"/>
      <addaction name="action_board"/>
-     <addaction name="action_TODO_lisst"/>
+     <addaction name="action_TODO_list"/>
     </widget>
     <addaction name="menu_New_Project"/>
     <addaction name="action_Open_project"/>
@@ -142,7 +145,7 @@
     <string>New board</string>
    </property>
   </action>
-  <action name="action_TODO_lisst">
+  <action name="action_TODO_list">
    <property name="enabled">
     <bool>false</bool>
    </property>

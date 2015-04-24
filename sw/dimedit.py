@@ -59,9 +59,9 @@ class DimEdit(QtGui.QLineEdit):
 
     def _toMils(self, num, unit):
         if unit == 'mil' or unit == 'mils': return num
-        if unit == 'in': return num*1000
-        if unit == 'mm': return num*39.37
-        if unit == 'cm': return num*393.7
+        if unit == 'in': return round(num*1000, 3)
+        if unit == 'mm': return round(num*39.37, 3)
+        if unit == 'cm': return round(num*393.7, 3)
         return 0
 
     def setDim(self, dim, unit):
@@ -71,9 +71,9 @@ class DimEdit(QtGui.QLineEdit):
         if n:
             mils = self._toMils(n[0], n[3])
             if unit == 'mils' or unit == 'mil': self.setText('{:.0f} mils'.format(mils))
-            elif unit == 'in': self.setText('{:.3f} in'.format(mils/1000))
-            elif unit == 'mm': self.setText('{:.3f} mm'.format(mils/39.37))
-            elif unit == 'cm': self.setText('{:.3f} cm'.format(mils/393.7))
+            elif unit == 'in': self.setText('{:.3f} in'.format(round(mils/1000, 3)))
+            elif unit == 'mm': self.setText('{:.3f} mm'.format(round(mils/39.37, 3)))
+            elif unit == 'cm': self.setText('{:.3f} cm'.format(round(mils/393.7, 3)))
             else: self.setText('')
         else:
             self.setText('')

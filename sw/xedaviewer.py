@@ -36,7 +36,7 @@ layersId = {
     51: 'aux5'
     }
 
-layersId.update({v: k for k, v in layersId.iteritems()})
+layersId.update({v: k for k, v in layersId.items()})
 
 
 Point = namedtuple('Point', 'x y')
@@ -301,17 +301,17 @@ class XedaViewer(QtGui.QWidget):
 
     def initShortcuts(self):
         self.shortcuts = []
-        for f, k in self.scene.cfg.shortcuts._d.iteritems():
+        for f, k in self.scene.cfg.shortcuts._d.items():
             if isinstance(k, (list, tuple)):
                 k = k[0]
             self.shortcuts.append( (f, QtGui.QKeySequence(k)) )
 
     def keyPressEvent(self, event):
-        # print event.text(), event.key(), event.modifiers(), event.type()
+        # print(event.text(), event.key(), event.modifiers(), event.type())
 
         k = QtGui.QKeySequence(event.modifiers()|event.key())
         try:
-            print k.toString()
+            print(k.toString())
         except: pass
 
         if event.key() == QtCore.Qt.Key_Up: pass
@@ -454,7 +454,7 @@ class BaseXedaScene(object):
 
     def renderLayer(self, transf, layer, sceneRect, rect, force):
         if layer not in self._layerImage or sceneRect != self._layerImage[layer][1] or force:
-            print 'processando layer', layer
+            print('processando layer', layer)
             img = QtGui.QPixmap(rect.width(), rect.height())
             img.fill(QtGui.QColor(0, 0, 0, 0))
             p = QtGui.QPainter(img)
@@ -486,7 +486,7 @@ class BaseXedaScene(object):
         return self._layerImage[layer][0]
 
     def invalidate(self, layer):
-        # print 'marcando layer como sujo: ', layer
+        # print('marcando layer como sujo: ', layer)
         if layer == -1:
             self._layerImage = {}
         if layer in self._layerImage:
@@ -506,20 +506,20 @@ class BaseXedaScene(object):
         for i in self.items:
             if rect.contains(i.getBounding()):
                 inside.append(i)
-        print 'total items: ', len(inside)
+        print('total items: ', len(inside))
         return inside
 
     def removeItem(self, item):
-        print 'removeItem'
+        print('removeItem')
 
     def rotateItem(self, item):
-        print 'rotateItem'
+        print('rotateItem')
 
     def getBounding(self):
         b = QtCore.QRect()
         for i in self.items:
             b.unite(i.bounding())
-        print 'tamanho total: ', b
+        print('tamanho total: ', b)
         return b
 
 
@@ -539,7 +539,7 @@ class PCBScene(BaseXedaScene):
         super(PCBScene, self).__init__(*args, **kwargs)
 
     def cmdPlace(self, **kwargs):
-        print 'place!!!'
+        print('place!!!')
 
     def addVia(self, data, mode=1):
         self.addItem(PCBViaItem(self, data))
@@ -548,23 +548,23 @@ class PCBScene(BaseXedaScene):
     #     self.addItem(PCBStringItem(data))
 
     # def addText(self, i):
-    #     print 'addText'
+    #     print('addText')
     # def addVia(self, i):
-    #     print 'addVia'
+    #     print('addVia')
     # def addPad(self, i):
-    #     print 'addPad'
+    #     print('addPad')
     # def addLine(self, i):
-    #     print 'addLine'
+    #     print('addLine')
     # def addArc(self, i):
-    #     print 'addArc'
+    #     print('addArc')
     # def addArea(self, i):
-    #     print 'addArea'
+    #     print('addArea')
     # def addPart(self, i):
-    #     print 'addPart'
+    #     print('addPart')
     # def setLayer(self, i):
-    #     print 'setLayer'
+    #     print('setLayer')
     # def addTrace(self, i):
-    #     print 'addTrace'
+    #     print('addTrace')
 
 
 
@@ -671,10 +671,10 @@ class BaseXedaInspector(QtGui.QDialog):
         return None
 
     def populate(self, data):
-        print data
+        print(data)
         self._data = data
         for t, f, ui in self._UI_XO:
-            print ui, f, data[f]
+            print(ui, f, data[f])
             if t == 1: #absolute position
                 self.getByName(ui).setDim('{}mil'.format(data[f]), 'mm')
             elif t == 2: #mm or mil dim
@@ -706,7 +706,7 @@ class BaseXedaInspector(QtGui.QDialog):
                 pass
             elif t == 7: #string
                 self._data[f] = self.getByName(ui).text()
-        print self._data
+        print(self._data)
         return self._data
 
 

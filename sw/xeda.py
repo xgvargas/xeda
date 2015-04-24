@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 __author__ = 'Gustavo Vargas <xgvargas@gmail.com>'
@@ -13,6 +13,7 @@ from smartside import setAsApplication
 import xedaviewer as bbb
 import xhelper
 import config
+import dialogs
 
 
 
@@ -21,6 +22,8 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
         super(MyApplication, self).__init__(parent)
         self.setupUi(self)
 
+        self.setWindowTitle('XEDA ver.'+__version__)
+
         # self.edt_console.setLocals({'app': self})
 
         self.scene = bbb.PCBScene(config.meta.pcb, myproj.pcb)
@@ -28,8 +31,8 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
         self.scene22 = bbb.SCHScene(config.meta.sch, myproj.sch)
         self.view_sch.setScene(self.scene22)
 
-        for x in xrange(0, 15000, 250):
-            for y in xrange(0, 17000, 250):
+        for x in range(0, 15000, 250):
+            for y in range(0, 17000, 250):
                 self.scene.addVia(dict(x=x, y=y))
                 # a = bbb.PCBViaItem(dict(x=x, y=y))
                 # self.scene.addItem(a)
@@ -67,6 +70,18 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
 
     def _on_view_sch__moveEvent(self, e):
         self.status.showMessage('2- x: {:.1f} y: {:.1f}'.format(e.x(), e.y()))
+
+    def _on_action_Console__activated(self): pass
+    def _on_action_Project__activated(self): pass
+    def _on_action_Schematic__activated(self): pass
+    def _on_action_board__activated(self): pass
+    def _on_action_TODO_list__activated(self): pass
+    def _on_action_Open_project__activated(self): pass
+    def _on_action_Close_project__activated(self): pass
+    def _on_action_Content__activated(self): pass
+    def _on_action_About__activated(self):
+        dialogs.AboutDialog.execute()
+
 
 
 ######################################################################

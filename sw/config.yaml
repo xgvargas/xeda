@@ -62,6 +62,15 @@ pcb:
         resetOrigin: R
         rotateItem: Space
         changeLayer: L
+        zoomIn:
+        zoomOut:
+        zoomFit:
+        refreshView:
+        useRuler:
+        flipItem:
+        mirrorXItem:
+        mirrorYItem:
+        editItem:
 
 sch:
     dim: [20000, 20000]
