@@ -86,6 +86,7 @@ class XedaViewer(QtGui.QWidget):
 
     moveEvent = QtCore.Signal(tuple)
     hoverEvent = QtCore.Signal(tuple)
+    commandEvent = QtCore.Signal(str)
 
     def __init__(self, *args, **kwargs):
         super(XedaViewer, self).__init__(*args, **kwargs)
@@ -199,19 +200,11 @@ class XedaViewer(QtGui.QWidget):
                              )
 
     def wheelEvent(self, event):
-        d = event.delta()
-
         if event.orientation() == QtCore.Qt.Orientation.Vertical:
-            factor = 1.25
-            if d > 0:
-                if self.scale < 1.6: self.scale *= factor
+            if event.delta() > 0:
+                self.zoomIn()
             else:
-                if self.scale > .04: self.scale /= factor
-            self.viewRect.setLeft(min(self.viewSize.width()-self.viewRect.width(),
-                                  max(0, self._mouse_pos.x()-event.pos().x()/self.scale)))
-            self.viewRect.setTop(min(self.viewSize.height()-self.viewRect.height(),
-                                 max(0, self._mouse_pos.y()-event.pos().y()/self.scale)))
-            self.repaint()
+                self.zoomOut()
             event.accept()
         else:
             event.ignore()
@@ -302,31 +295,38 @@ class XedaViewer(QtGui.QWidget):
     def initShortcuts(self):
         self.shortcuts = []
         for f, k in self.scene.cfg.shortcuts._d.items():
-            if isinstance(k, (list, tuple)):
-                k = k[0]
-            self.shortcuts.append( (f, QtGui.QKeySequence(k)) )
+            if k:
+                if isinstance(k, (list, tuple)):
+                    k = k[0]
+                self.shortcuts.append( (f, QtGui.QKeySequence(k)) )
+                print(f,k)
 
     def keyPressEvent(self, event):
         # print(event.text(), event.key(), event.modifiers(), event.type())
 
-        k = QtGui.QKeySequence(event.modifiers()|event.key())
-        try:
-            print(k.toString())
-        except: pass
-
-        if event.key() == QtCore.Qt.Key_Up: pass
+        if event.key() == QtCore.Qt.Key_Escape: pass
+        elif event.key() == QtCore.Qt.Key_Up: pass
         elif event.key() == QtCore.Qt.Key_Down: pass
-        elif event.key() == QtCore.Qt.Key_Left: pass
+        elif event.key() == QtCore.Qt.Key_Left:
+            if self._snap_pos.x() > 0:
+                self._snap_pos.setX(max(0, self._snap_pos.x()-self.scene.proj.snap))
+                QtGui.QCursor.setPos(self.mapToGlobal(self._snap_pos))
+                self.repaint()
         elif event.key() == QtCore.Qt.Key_Right: pass
-        elif event.key() == QtCore.Qt.Key_PageUp: pass
-        elif event.key() == QtCore.Qt.Key_PageDown: pass
         else:
+            k = QtGui.QKeySequence(event.modifiers()|event.key())
+            try:
+                print(k.toString())
+            except: pass
             for f, s in self.shortcuts:
                 if s.matches(k):
+                    print ('foi:', f, s.toString())
                     if hasattr(self, f):
                         getattr(self, f)()
                     elif hasattr(self.scene, f):
                         getattr(self.scene, f)()
+                    else:
+                        self.commandEvent.emit(f)
 
     def setOrigin(self, pos=None):
         if pos is -1:
@@ -339,6 +339,36 @@ class XedaViewer(QtGui.QWidget):
 
     def resetOrigin(self):
         self.setOrigin(-1)
+
+    def matchPoints(self, scene, widget):
+        self.viewRect.setLeft(min(self.viewSize.width()-self.viewRect.width(),
+                              max(0, scene.x()-widget.x()/self.scale)))
+        self.viewRect.setTop(min(self.viewSize.height()-self.viewRect.height(),
+                             max(0, scene.y()-widget.y()/self.scale)))
+        self.repaint()
+
+    def zoomIn(self, at=None):
+        if self.scale < 1.6:
+            self.scale *= 1.25
+            cursor = self.mapFromGlobal(QtGui.QCursor.pos())
+            if not self.contentsRect().contains(cursor):
+                cursor = self.contentsRect().center()
+            self.matchPoints(self._mouse_pos, cursor)
+
+    def zoomOut(self, at=None):
+        if self.scale > .04:
+            self.scale /= 1.25
+            cursor = self.mapFromGlobal(QtGui.QCursor.pos())
+            if not self.contentsRect().contains(cursor):
+                cursor = self.contentsRect().center()
+            self.matchPoints(self._mouse_pos, cursor)
+
+    def zoomFit(self):
+        #TODO ajustar a escala....
+        self.matchPoints(self.scene.getBounding().center(), self.contentsRect().center())
+
+    def refreshView(self):
+        self.repaint(True)
 
     def setGrid(self, grid1, grid2, weak=False):
         self.scene.proj.grid1 = grid1
@@ -516,9 +546,10 @@ class BaseXedaScene(object):
         print('rotateItem')
 
     def getBounding(self):
-        b = QtCore.QRect()
+        b = QtCore.QRectF()
         for i in self.items:
-            b.unite(i.bounding())
+            print(i.getBounding())
+            b = b.united(i.getBounding())
         print('tamanho total: ', b)
         return b
 
