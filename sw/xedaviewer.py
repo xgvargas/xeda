@@ -47,7 +47,7 @@ def dimConvert(val, out='mils', default=None):
     if not default:
         default = 'mils'   #TODO ler isso da configuracao!!!!
 
-    if isinstance(val, (str, unicode)):
+    if isinstance(val, str):
         g = re.match(r'^\s*([+-]?\d+[,.]?\d*|[+-]?[.,]\d+)\s*(mm|in|mils?|cm)?\s*$', val)
         if g:
             v = float(g.group(1))
@@ -197,20 +197,21 @@ class XedaViewer(QtGui.QWidget):
 
             if self._rulerOrigin:
                 paint.setFont(QtGui.QFont('Helvetica', 10/self.scale))
+                unit = self.scene.proj.units
 
                 paint.setPen(QtGui.QPen(QtGui.QColor('red'), 0))
                 paint.drawLine(self._rulerOrigin.x(), self._rulerOrigin.y(), self._snap_pos.x(), self._rulerOrigin.y())
                 dx = self._snap_pos.x()-self._rulerOrigin.x()
-                paint.drawText(rect.left()+5/self.scale, rect.top()+10/self.scale, '{:.2f} mils'.format(abs(dx)))
+                paint.drawText(rect.left()+5/self.scale, rect.top()+10/self.scale, '{:.2f} {}'.format(dimConvert(abs(dx), unit), unit))
 
                 paint.setPen(QtGui.QPen(QtGui.QColor('cyan'), 0))
                 paint.drawLine(self._rulerOrigin.x(), self._rulerOrigin.y(), self._rulerOrigin.x(), self._snap_pos.y())
                 dy = self._snap_pos.y()-self._rulerOrigin.y()
-                paint.drawText(rect.left()+5/self.scale, rect.top()+25/self.scale, '{:.2f} mils'.format(abs(dy)))
+                paint.drawText(rect.left()+5/self.scale, rect.top()+25/self.scale, '{:.2f} {}'.format(dimConvert(abs(dy), unit), unit))
 
                 paint.setPen(QtGui.QPen(QtGui.QColor('green'), 0))
                 paint.drawLine(self._rulerOrigin.x(), self._rulerOrigin.y(), self._snap_pos.x(), self._snap_pos.y())
-                paint.drawText(rect.left()+5/self.scale, rect.top()+40/self.scale, '{:.2f} mils'.format(pow(pow(dx, 2)+pow(dy, 2), .5)))
+                paint.drawText(rect.left()+5/self.scale, rect.top()+40/self.scale, '{:.2f} {}'.format(dimConvert(pow(pow(dx, 2)+pow(dy, 2), .5), unit), unit))
 
                 paint.setPen(QtGui.QPen(QtGui.QColor('yellow'), 0))
                 a = abs(math.degrees(math.atan2(dy, dx)))%90
@@ -419,6 +420,20 @@ class XedaViewer(QtGui.QWidget):
         self._rulerOrigin = self._snap_pos
         self.repaint()
 
+    def setUnit(self, unit):
+        self.scene.proj.units = unit
+        self.repaint()
+        self.moveEvent.emit(self._snap_pos-self.origin)
+
+    def cycleUnit(self):
+        if self.scene.proj.units == 'mils':
+            self.setUnit('mm')
+        elif self.scene.proj.units == 'mm':
+            self.setUnit('in')
+        elif self.scene.proj.units == 'in':
+            self.setUnit('cm')
+        else:
+            self.setUnit('mils')
 
 
 

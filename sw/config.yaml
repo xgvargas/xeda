@@ -46,7 +46,7 @@ pcb:
             aux5:
     shortcuts:
         gridDialog: G
-        setUnit: Q
+        cycleUnit: Q
         placeItem:
             - P
             - text: S
