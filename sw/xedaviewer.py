@@ -4,7 +4,7 @@ from PySide import QtCore, QtGui
 import re
 import config
 from collections import namedtuple
-
+import math
 
 
 
@@ -95,7 +95,6 @@ class XedaViewer(QtGui.QWidget):
         # self.unsetCursor()  #para mostrar o cursor denovo...
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.setMouseTracking(True)
-        # self.scale(.1, -.1)
 
         self._pan_pos = None
         self._mouse_pos = None
@@ -105,6 +104,8 @@ class XedaViewer(QtGui.QWidget):
         self.scene = None
 
         self.origin = QtCore.QPoint(2000, 1000)
+
+        self._rulerOrigin = None
 
         self.viewSize = QtCore.QSize(0, 0)
         self.viewRect = QtCore.QRectF(0, 0, 0, 0)
@@ -193,6 +194,32 @@ class XedaViewer(QtGui.QWidget):
             pos = self._snap_pos if self.doSnap else self._mouse_pos
             paint.drawLine(rect.left(), pos.y(), rect.right(), pos.y())
             paint.drawLine(pos.x(), rect.top(), pos.x(), rect.bottom())
+
+            if self._rulerOrigin:
+                paint.setFont(QtGui.QFont('Helvetica', 10/self.scale))
+
+                paint.setPen(QtGui.QPen(QtGui.QColor('red'), 0))
+                paint.drawLine(self._rulerOrigin.x(), self._rulerOrigin.y(), self._snap_pos.x(), self._rulerOrigin.y())
+                dx = self._snap_pos.x()-self._rulerOrigin.x()
+                paint.drawText(rect.left()+5/self.scale, rect.top()+10/self.scale, '{:.2f}'.format(abs(dx)))
+
+                paint.setPen(QtGui.QPen(QtGui.QColor('cyan'), 0))
+                paint.drawLine(self._rulerOrigin.x(), self._rulerOrigin.y(), self._rulerOrigin.x(), self._snap_pos.y())
+                dy = self._snap_pos.y()-self._rulerOrigin.y()
+                paint.drawText(rect.left()+5/self.scale, rect.top()+25/self.scale, '{:.2f}'.format(abs(dy)))
+
+                paint.setPen(QtGui.QPen(QtGui.QColor('green'), 0))
+                paint.drawLine(self._rulerOrigin.x(), self._rulerOrigin.y(), self._snap_pos.x(), self._snap_pos.y())
+                paint.drawText(rect.left()+5/self.scale, rect.top()+40/self.scale, '{:.2f}'.format(pow(pow(dx, 2)+pow(dy, 2), .5)))
+
+                paint.setPen(QtGui.QPen(QtGui.QColor('yellow'), 0))
+                a = abs(math.degrees(math.atan2(dy, dx)))%90
+                #TODO desenhar um pie
+                paint.drawText(rect.left()+5/self.scale, rect.top()+55/self.scale, '{:.2f}'.format(a))
+
+                paint.setPen(QtGui.QPen(QtGui.QColor('magenta'), 0))
+                #TODO desenhar um pie
+                paint.drawText(rect.left()+5/self.scale, rect.top()+70/self.scale, '{:.2f}'.format(90-a))
 
     def mapToScene(self, point):
         return QtCore.QPoint(point.x()/self.scale+self.viewRect.left(),
@@ -304,7 +331,9 @@ class XedaViewer(QtGui.QWidget):
     def keyPressEvent(self, event):
         # print(event.text(), event.key(), event.modifiers(), event.type())
 
-        if event.key() == QtCore.Qt.Key_Escape: pass
+        if event.key() == QtCore.Qt.Key_Escape:
+            self._rulerOrigin = None
+            self.repaint()
         elif event.key() == QtCore.Qt.Key_Up: pass
         elif event.key() == QtCore.Qt.Key_Down: pass
         elif event.key() == QtCore.Qt.Key_Left:
@@ -386,7 +415,9 @@ class XedaViewer(QtGui.QWidget):
             self.setSnap(g['snap'])
             self.setGrid(g['grid1'], g['grid2'], g['weak'])
 
-
+    def useRuler(self):
+        self._rulerOrigin = self._snap_pos
+        self.repaint()
 
 
 
