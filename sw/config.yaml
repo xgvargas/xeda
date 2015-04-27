@@ -11,6 +11,8 @@ libs:
     - lib2
     - libnnn
 
+screenres: 72
+
 pcb:
     dim: [20000, 20000]
     colors:
@@ -47,26 +49,26 @@ pcb:
     shortcuts:
         gridDialog: G
         cycleUnit: Q
-        placeItem:
-            - P
-            - text: S
-              pad: P
-              via: V
-              line: L
-              arc: R
-              area: A
-        traceLine: T
-        deleteItem: Del
-        clearSel: X
         setOrigin: O
         resetOrigin: R
-        rotateItem: Space
-        changeLayer: L
         zoomIn: PgUp
         zoomOut: PgDown
         zoomFit: Home
         refreshView: End
         useRuler: Shift+R
+        # placeItem:
+        #     - P
+        #     - text: S
+        #       pad: P
+        #       via: V
+        #       line: L
+        #       arc: R
+        #       area: A
+        # clearSel: X
+        # deleteItem: Del
+        # traceLine: T
+        # changeLayer: L
+        # rotateItem: Space
         # flipItem:
         # mirrorXItem:
         # mirrorYItem:

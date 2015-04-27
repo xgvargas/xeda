@@ -48,8 +48,13 @@ class SCHEditor(QtGui.QMainWindow, Ui_SCHForm, smartsignal.SmartSignal):
     def _on_action_Junction__activated(self): pass
     def _on_action_Arc__activated(self): pass
     def _on_action_Text__activated(self): pass
-    def _on_actionZoom_In__activated(self): pass
-    def _on_actionZoom_Out__activated(self): pass
-    def _on_actionZoom_Fit__activated(self): pass
-    def _on_actionSet_Origin__activated(self): pass
-    def _on_action_Reset_Origin__activated(self): pass
+    def _on_actionZoom_Iin__activated(self):
+        self.view_pcb.zoomIn()
+    def _on_actionZoo_m_Out__activated(self):
+        self.view_pcb.zoomOut()
+    def _on_actionZoom_Fit__activated(self):
+        self.view_pcb.zoomFit()
+    def _on_actionSet_Origin__activated(self):
+        self.view_pcb.setOrigin()
+    def _on_action_Reset_Origin__activated(self):
+        self.view_pcb.resetOrigin()

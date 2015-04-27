@@ -2,6 +2,9 @@
   <qresource prefix="via">
     <file>via.png</file>
   </qresource>
+  <qresource prefix="dlg">
+    <file>about.png</file>
+  </qresource>
   <qresource prefix="base">
     <file>xeda.ico</file>
   </qresource>

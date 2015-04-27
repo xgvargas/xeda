@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>290</width>
-    <height>188</height>
+    <width>316</width>
+    <height>315</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,70 +17,18 @@
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
    </property>
-   <item>
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
+   <property name="margin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QLabel" name="label">
-     <property name="text">
-      <string>About...</string>
+     <property name="pixmap">
+      <pixmap resource="xeda.qrc">:/dlg/about.png</pixmap>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>19</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_2">
-     <property name="font">
-      <font>
-       <family>Narkisim</family>
-       <pointsize>28</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>XEDA</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -91,7 +39,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="xeda.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
