@@ -14,6 +14,7 @@ import xedaviewer as bbb
 import xhelper
 import config
 import dialogs
+import pcbeditor, scheditor
 
 
 
@@ -76,7 +77,11 @@ class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
     def _on_action_Schematic__activated(self): pass
     def _on_action_board__activated(self): pass
     def _on_action_TODO_list__activated(self): pass
-    def _on_action_Open_project__activated(self): pass
+    def _on_action_Open_project__activated(self):
+        self.pcb = pcbeditor.PCBEditor(myproj, self)
+        self.pcb.show()
+        self.sch = scheditor.SCHEditor(myproj, self)
+        self.sch.show()
     def _on_action_Close_project__activated(self): pass
     def _on_action_Content__activated(self): pass
     def _on_action_About__activated(self):

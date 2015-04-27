@@ -342,12 +342,12 @@ class XedaViewer(QtGui.QWidget):
 
     def matchPoints(self, scene, widget):
         self.viewRect.setLeft(min(self.viewSize.width()-self.viewRect.width(),
-                              max(0, scene.x()-widget.x()/self.scale)))
+                                  max(0, scene.x()-widget.x()/self.scale)))
         self.viewRect.setTop(min(self.viewSize.height()-self.viewRect.height(),
-                             max(0, scene.y()-widget.y()/self.scale)))
+                                 max(0, scene.y()-widget.y()/self.scale)))
         self.repaint()
 
-    def zoomIn(self, at=None):
+    def zoomIn(self):
         if self.scale < 1.6:
             self.scale *= 1.25
             cursor = self.mapFromGlobal(QtGui.QCursor.pos())
@@ -355,7 +355,7 @@ class XedaViewer(QtGui.QWidget):
                 cursor = self.contentsRect().center()
             self.matchPoints(self._mouse_pos, cursor)
 
-    def zoomOut(self, at=None):
+    def zoomOut(self):
         if self.scale > .04:
             self.scale /= 1.25
             cursor = self.mapFromGlobal(QtGui.QCursor.pos())
