@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SCHForm</class>
+ <widget class="QMainWindow" name="SCHForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>687</width>
+    <height>118</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Xeda Scheme - Project [nhanhanhaahh]</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="xeda.qrc">
+    <normaloff>:/base/xeda.ico</normaloff>:/base/xeda.ico</iconset>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="margin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_1">
+       <attribute name="title">
+        <string>Entry page</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="XedaViewer" name="view_sch" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>687</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuPlace">
+    <property name="title">
+     <string>&amp;Place</string>
+    </property>
+    <addaction name="action_Part"/>
+    <addaction name="action_Trace"/>
+    <addaction name="actionP_ower"/>
+    <addaction name="action_Net_name"/>
+    <addaction name="actionGlobal_Port"/>
+    <addaction name="action_Bus"/>
+    <addaction name="action_Junction"/>
+    <addaction name="action_Text"/>
+    <addaction name="action_Line"/>
+    <addaction name="action_Arc"/>
+    <addaction name="actionS_heet_symbol"/>
+   </widget>
+   <widget class="QMenu" name="menu_Tools">
+    <property name="title">
+     <string>&amp;Tools</string>
+    </property>
+    <addaction name="action_Grid_Snap"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_Libraries"/>
+    <addaction name="separator"/>
+    <addaction name="action_Manage_sheets"/>
+   </widget>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_Save"/>
+    <addaction name="separator"/>
+    <addaction name="action_Print"/>
+    <addaction name="separator"/>
+    <addaction name="action_Export"/>
+    <addaction name="action_Inport"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="action_Content"/>
+    <addaction name="separator"/>
+    <addaction name="action_About"/>
+   </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="action_Inspector"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoom_In"/>
+    <addaction name="actionZoom_Out"/>
+    <addaction name="actionZoom_Fit"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_Origin"/>
+    <addaction name="action_Reset_Origin"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_View"/>
+   <addaction name="menuPlace"/>
+   <addaction name="menu_Tools"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="status"/>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="windowTitle">
+    <string>Inspector</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_2">
+   <property name="windowTitle">
+    <string>toolBar_2</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Grid_Snap"/>
+   <addaction name="action_Manage_sheets"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_3">
+   <property name="windowTitle">
+    <string>toolBar_3</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Part"/>
+   <addaction name="action_Trace"/>
+   <addaction name="actionP_ower"/>
+   <addaction name="action_Net_name"/>
+   <addaction name="actionGlobal_Port"/>
+   <addaction name="action_Bus"/>
+   <addaction name="action_Text"/>
+   <addaction name="action_Line"/>
+   <addaction name="action_Arc"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_4">
+   <property name="windowTitle">
+    <string>toolBar_4</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Save"/>
+   <addaction name="action_Print"/>
+  </widget>
+  <action name="action_Trace">
+   <property name="text">
+    <string>&amp;Trace</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert a Trace</string>
+   </property>
+  </action>
+  <action name="action_Line">
+   <property name="text">
+    <string>&amp;Line</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert a Line</string>
+   </property>
+  </action>
+  <action name="action_Save">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="action_Print">
+   <property name="text">
+    <string>&amp;Print</string>
+   </property>
+  </action>
+  <action name="action_Export">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Export</string>
+   </property>
+  </action>
+  <action name="action_Inport">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Import</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="text">
+    <string>Cl&amp;ose</string>
+   </property>
+  </action>
+  <action name="action_Grid_Snap">
+   <property name="text">
+    <string>&amp;Grid &amp;&amp; Snap</string>
+   </property>
+   <property name="toolTip">
+    <string>Adjust Grid and Snap</string>
+   </property>
+  </action>
+  <action name="action_String">
+   <property name="text">
+    <string>&amp;String</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert a String</string>
+   </property>
+  </action>
+  <action name="action_Part">
+   <property name="text">
+    <string>&amp;Part</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert a Part</string>
+   </property>
+  </action>
+  <action name="action_Content">
+   <property name="text">
+    <string>&amp;Content...</string>
+   </property>
+  </action>
+  <action name="action_About">
+   <property name="text">
+    <string>&amp;About...</string>
+   </property>
+  </action>
+  <action name="action_Inspector">
+   <property name="text">
+    <string>&amp;Inspector</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Inspector window</string>
+   </property>
+   <property name="shortcut">
+    <string>P</string>
+   </property>
+  </action>
+  <action name="actionP_ower">
+   <property name="text">
+    <string>P&amp;ower</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert Power Symbol</string>
+   </property>
+  </action>
+  <action name="action_Net_name">
+   <property name="text">
+    <string>&amp;Net name</string>
+   </property>
+  </action>
+  <action name="actionGlobal_Port">
+   <property name="text">
+    <string>&amp;Global Port</string>
+   </property>
+  </action>
+  <action name="action_Bus">
+   <property name="text">
+    <string>&amp;Bus</string>
+   </property>
+  </action>
+  <action name="actionSet_Libraries">
+   <property name="text">
+    <string>Set &amp;Libraries</string>
+   </property>
+  </action>
+  <action name="action_Append_Sheet">
+   <property name="text">
+    <string>&amp;Manage Sheets</string>
+   </property>
+  </action>
+  <action name="action_Manage_sheets">
+   <property name="text">
+    <string>&amp;Manage sheets</string>
+   </property>
+  </action>
+  <action name="actionS_heet_symbol">
+   <property name="text">
+    <string>S&amp;heet symbol</string>
+   </property>
+  </action>
+  <action name="action_Junction">
+   <property name="text">
+    <string>&amp;Junction</string>
+   </property>
+  </action>
+  <action name="action_Arc">
+   <property name="text">
+    <string>&amp;Arc</string>
+   </property>
+  </action>
+  <action name="action_Text">
+   <property name="text">
+    <string>&amp;Text</string>
+   </property>
+  </action>
+  <action name="actionZoom_In">
+   <property name="text">
+    <string>Zoom I&amp;n</string>
+   </property>
+  </action>
+  <action name="actionZoom_Out">
+   <property name="text">
+    <string>Zoo&amp;m Out</string>
+   </property>
+  </action>
+  <action name="actionZoom_Fit">
+   <property name="text">
+    <string>Zoom &amp;Fit</string>
+   </property>
+  </action>
+  <action name="actionSet_Origin">
+   <property name="text">
+    <string>Set &amp;Origin</string>
+   </property>
+  </action>
+  <action name="action_Reset_Origin">
+   <property name="text">
+    <string>&amp;Reset Origin</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>XedaViewer</class>
+   <extends>QWidget</extends>
+   <header location="global">xedaviewer</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="xeda.qrc"/>
+ </resources>
+ <connections/>
+</ui>

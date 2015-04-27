@@ -14,9 +14,10 @@ libs:
 pcb:
     dim: [20000, 20000]
     colors:
-        back: [0, 0, 0]
+        back: [0, 0, 0, 0]
         grid1: [64, 64, 64]
         grid2: [222, 222, 222]
+        origin: [255, 0, 0, 180]
         guide: [255, 255, 255]
         selection: [255, 255, 255]
         layer:
@@ -44,9 +45,9 @@ pcb:
             aux4:
             aux5:
     shortcuts:
-        grid: G
-        unit: Q
-        place:
+        gridDialog: G
+        setUnit: Q
+        placeItem:
             - P
             - text: S
               pad: P
@@ -54,13 +55,22 @@ pcb:
               line: L
               arc: R
               area: A
-        trace: T
-        delete: Del
-        clearsel: X
-        setorigin: O
-        resetorigin: R
-        rotate: Space
-        layer: L
+        traceLine: T
+        deleteItem: Del
+        clearSel: X
+        setOrigin: O
+        resetOrigin: R
+        rotateItem: Space
+        changeLayer: L
+        zoomIn: PgUp
+        zoomOut: PgDown
+        zoomFit: Home
+        refreshView: End
+        useRuler: Shift+R
+        # flipItem:
+        # mirrorXItem:
+        # mirrorYItem:
+        # editItem:
 
 sch:
     dim: [20000, 20000]
@@ -68,6 +78,7 @@ sch:
         back: [245, 239, 191]
         grid1: [80, 80, 208]
         grid2: [222, 30, 60]
+        origin: [255, 0, 0, 180]
         guide: [0, 0, 110]
         selection: [255, 255, 255]
         item:
@@ -81,20 +92,20 @@ sch:
             port:
             art:
     shortcuts:
-        grid: G
-        unit: Q
-        place:
+        gridDialog: G
+        setUnit: Q
+        placeItem:
             - P
             - part: P
               power: O
               text: S
               line: L
               arc: R
-        trace: T
-        junction: J
-        delete: DEL
-        clearsel: X
-        setorigin: O
-        resetorigin: R
-        rotate: Space
+        placeJunction: J
+        traceLine: T
+        deleteItem: Del
+        clearSel: X
+        setOrigin: O
+        resetOrigin: R
+        rotateItem: Space
 ...

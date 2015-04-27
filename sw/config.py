@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import xhelper
-
 
 class meta():
     pass
@@ -9,6 +7,7 @@ class meta():
 
 def init():
     global meta
+    import xhelper
     meta = xhelper.readYamlConfig('config.yaml')
 
 def save():

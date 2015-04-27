@@ -37,16 +37,11 @@
           <item row="1" column="1">
            <widget class="QComboBox" name="sel_snap_all">
             <property name="currentIndex">
-             <number>3</number>
+             <number>0</number>
             </property>
             <property name="maxVisibleItems">
              <number>15</number>
             </property>
-            <item>
-             <property name="text">
-              <string>No snap</string>
-             </property>
-            </item>
             <item>
              <property name="text">
               <string>Custom</string>
@@ -111,8 +106,11 @@
           </item>
           <item row="0" column="1">
            <widget class="QComboBox" name="sel_snap_comp">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="currentIndex">
-             <number>3</number>
+             <number>-1</number>
             </property>
             <property name="maxVisibleItems">
              <number>15</number>
@@ -201,6 +199,9 @@
           </item>
           <item row="0" column="2">
            <widget class="DimEdit" name="edt_snap_comp">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximumSize">
              <size>
               <width>66</width>
@@ -426,9 +427,9 @@
          </layout>
         </item>
         <item>
-         <widget class="QCheckBox" name="chk_strong">
+         <widget class="QCheckBox" name="chk_weak">
           <property name="text">
-           <string>Use strong grid lines</string>
+           <string>Use weak grid lines</string>
           </property>
          </widget>
         </item>
@@ -445,7 +446,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
+    <widget class="QDialogButtonBox" name="btn_ok">
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
@@ -470,12 +471,12 @@
   <tabstop>edt_grid1</tabstop>
   <tabstop>sel_grid2</tabstop>
   <tabstop>edt_grid2</tabstop>
-  <tabstop>buttonBox</tabstop>
+  <tabstop>btn_ok</tabstop>
  </tabstops>
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>btn_ok</sender>
    <signal>rejected()</signal>
    <receiver>dlg_grid</receiver>
    <slot>reject()</slot>
@@ -487,6 +488,38 @@
     <hint type="destinationlabel">
      <x>2</x>
      <y>130</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sel_snap_all</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>sel_snap_comp</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>113</x>
+     <y>70</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>120</x>
+     <y>49</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>edt_snap_all</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>edt_snap_comp</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>193</x>
+     <y>65</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>195</x>
+     <y>48</y>
     </hint>
    </hints>
   </connection>
