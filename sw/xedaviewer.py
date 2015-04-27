@@ -201,25 +201,25 @@ class XedaViewer(QtGui.QWidget):
                 paint.setPen(QtGui.QPen(QtGui.QColor('red'), 0))
                 paint.drawLine(self._rulerOrigin.x(), self._rulerOrigin.y(), self._snap_pos.x(), self._rulerOrigin.y())
                 dx = self._snap_pos.x()-self._rulerOrigin.x()
-                paint.drawText(rect.left()+5/self.scale, rect.top()+10/self.scale, '{:.2f}'.format(abs(dx)))
+                paint.drawText(rect.left()+5/self.scale, rect.top()+10/self.scale, '{:.2f} mils'.format(abs(dx)))
 
                 paint.setPen(QtGui.QPen(QtGui.QColor('cyan'), 0))
                 paint.drawLine(self._rulerOrigin.x(), self._rulerOrigin.y(), self._rulerOrigin.x(), self._snap_pos.y())
                 dy = self._snap_pos.y()-self._rulerOrigin.y()
-                paint.drawText(rect.left()+5/self.scale, rect.top()+25/self.scale, '{:.2f}'.format(abs(dy)))
+                paint.drawText(rect.left()+5/self.scale, rect.top()+25/self.scale, '{:.2f} mils'.format(abs(dy)))
 
                 paint.setPen(QtGui.QPen(QtGui.QColor('green'), 0))
                 paint.drawLine(self._rulerOrigin.x(), self._rulerOrigin.y(), self._snap_pos.x(), self._snap_pos.y())
-                paint.drawText(rect.left()+5/self.scale, rect.top()+40/self.scale, '{:.2f}'.format(pow(pow(dx, 2)+pow(dy, 2), .5)))
+                paint.drawText(rect.left()+5/self.scale, rect.top()+40/self.scale, '{:.2f} mils'.format(pow(pow(dx, 2)+pow(dy, 2), .5)))
 
                 paint.setPen(QtGui.QPen(QtGui.QColor('yellow'), 0))
                 a = abs(math.degrees(math.atan2(dy, dx)))%90
                 #TODO desenhar um pie
-                paint.drawText(rect.left()+5/self.scale, rect.top()+55/self.scale, '{:.2f}'.format(a))
+                paint.drawText(rect.left()+5/self.scale, rect.top()+55/self.scale, '{:.2f} \u00b0'.format(a))
 
                 paint.setPen(QtGui.QPen(QtGui.QColor('magenta'), 0))
                 #TODO desenhar um pie
-                paint.drawText(rect.left()+5/self.scale, rect.top()+70/self.scale, '{:.2f}'.format(90-a))
+                paint.drawText(rect.left()+5/self.scale, rect.top()+70/self.scale, '{:.2f} \u00b0'.format(90-a))
 
     def mapToScene(self, point):
         return QtCore.QPoint(point.x()/self.scale+self.viewRect.left(),
