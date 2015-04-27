@@ -12,7 +12,7 @@ class PCBEditor(QtGui.QMainWindow, Ui_PCBForm, smartsignal.SmartSignal):
     def __init__(self, project, parent=None):
         super(PCBEditor, self).__init__(parent)
         self.setupUi(self)
-
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
         self.setWindowTitle('XEDA PCBEditor -')
 
         self.scene = xedaviewer.PCBScene(config.meta.pcb, project.pcb)
