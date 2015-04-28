@@ -5,6 +5,7 @@ import re
 import config
 from collections import namedtuple
 import math
+import time
 
 
 
@@ -131,6 +132,8 @@ class XedaViewer(QtGui.QWidget):
         qp.begin(self)
         # qp.setRenderHint(QtGui.QPainter.Antialiasing)
 
+        t1 = time.time()
+
         self.viewRect.setWidth(e.rect().width()/self.scale),
         self.viewRect.setHeight(e.rect().height()/self.scale)
 
@@ -148,15 +151,24 @@ class XedaViewer(QtGui.QWidget):
             self._drawGrid(p, self.viewRect.translated(-self.origin))
         qp.drawPixmap(0, 0, self._gridImage)
 
+        t2 = time.time()
+
         # qp.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
         for l in self.scene.proj.layers.active:
             qp.drawPixmap(0, 0, self.scene.renderLayer(t, l, self.viewRect, e.rect(), self.forcePaint))
+
+        t3 = time.time()
 
         qp.setTransform(t)
         # qp.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
         self._drawCursor(qp, self.viewRect)
 
+        t4 = time.time()
+
         qp.end()
+
+        print('grid= {:f}, layers= {:f}, cursor= {:f}, total= {:f}'.format(t2-t1, t3-t2, t4-t3, t4-t1))
+
         self.forcePaint = False
 
     def _drawGrid(self, paint, rect):
@@ -525,10 +537,17 @@ class BaseXedaScene(object):
 
         self.size = QtCore.QSize(0, 0)
 
+        self.blah = None
+
     def setSceneSize(self, size):
         self.size = size
 
     def renderLayer(self, transf, layer, sceneRect, rect, force):
+        if sceneRect != self.blah or force:
+            self.blah = QtCore.QRectF(sceneRect)
+            self._toshow = self.getItems(sceneRect)
+        toshow = self._toshow
+
         if layer not in self._layerImage or sceneRect != self._layerImage[layer][1] or force:
             print('processando layer', layer)
             img = QtGui.QPixmap(rect.width(), rect.height())
@@ -539,7 +558,7 @@ class BaseXedaScene(object):
             p.setTransform(transf)
             self._layerImage[layer] = (img, QtCore.QRectF(sceneRect))
 
-            toshow = self.getItems(sceneRect)
+            # toshow = self.getItems(sceneRect)
 
             for i in toshow:
                 if i._x_layer in (-1, layer):
