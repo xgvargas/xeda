@@ -5,4 +5,4 @@ from PySide import QtCore, QtGui
 class LayerSelector(QtGui.QWidget):
 
     def __init__(self, *args, **kwargs):
-        super(LayerSelector, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)

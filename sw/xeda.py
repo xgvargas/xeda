@@ -20,7 +20,7 @@ import pcbeditor, scheditor
 
 class MyApplication(QtGui.QMainWindow, Ui_MainWindow, smartsignal.SmartSignal):
     def __init__(self, parent=None):
-        super(MyApplication, self).__init__(parent)
+        super().__init__(parent)
         self.setupUi(self)
 
         self.setWindowTitle('XEDA ver.'+__version__)

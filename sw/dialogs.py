@@ -9,7 +9,7 @@ import config
 
 class AboutDialog(QtGui.QDialog, Ui_dlg_about, smartsignal.SmartSignal):
     def __init__(self, parent=None):
-        super(AboutDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setupUi(self)
 
         self.auto_connect()

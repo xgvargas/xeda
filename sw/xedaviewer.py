@@ -90,7 +90,7 @@ class XedaViewer(QtGui.QWidget):
     commandEvent = QtCore.Signal(str)
 
     def __init__(self, *args, **kwargs):
-        super(XedaViewer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setCursor(QtCore.Qt.BlankCursor)
         # self.unsetCursor()  #para mostrar o cursor denovo...
@@ -125,7 +125,7 @@ class XedaViewer(QtGui.QWidget):
 
     def repaint(self, force=False):
         self.forcePaint = force
-        super(XedaViewer, self).repaint()
+        super().repaint()
 
     def paintEvent(self, e):
         qp = QtGui.QPainter()
@@ -167,7 +167,7 @@ class XedaViewer(QtGui.QWidget):
 
         qp.end()
 
-        print('grid= {:f}, layers= {:f}, cursor= {:f}, total= {:f}'.format(t2-t1, t3-t2, t4-t3, t4-t1))
+        # print('grid= {:f}, layers= {:f}, cursor= {:f}, total= {:f}'.format(t2-t1, t3-t2, t4-t3, t4-t1))
 
         self.forcePaint = False
 
@@ -253,13 +253,13 @@ class XedaViewer(QtGui.QWidget):
         self.setFocus()
 
     def leaveEvent(self, event):
-        super(XedaViewer, self).leaveEvent(event)
+        super().leaveEvent(event)
         self._snap_pos = None
         self.repaint()
         self.clearFocus()
 
     def mousePressEvent(self, event):
-        super(XedaViewer, self).mousePressEvent(event)
+        super().mousePressEvent(event)
         if event.button() == QtCore.Qt.MouseButton.LeftButton:
             i = self._discoverItem(None)
             #TODO quando tiver mas de um item isso sera assincrono.... fudeu
@@ -288,7 +288,7 @@ class XedaViewer(QtGui.QWidget):
             event.ignore()
 
     def mouseMoveEvent(self, event):
-        super(XedaViewer, self).mouseMoveEvent(event)
+        super().mouseMoveEvent(event)
         self._mouse_pos = self.mapToScene(event.pos())
         n = self.scene.proj.snap
         self._snap_pos = QtCore.QPoint((self._mouse_pos.x()//n)*n, (self._mouse_pos.y()//n)*n)
@@ -309,7 +309,7 @@ class XedaViewer(QtGui.QWidget):
             event.ignore()
 
     def mouseReleaseEvent(self, event):
-        super(XedaViewer, self).mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
         if event.button() == QtCore.Qt.MouseButton.LeftButton:
             pass
             #TODO solta o que estava arrastando...
@@ -462,7 +462,7 @@ import smartside.signal as smartsignal
 class GridDialog(QtGui.QDialog, Ui_dlg_grid, smartsignal.SmartSignal):
 
     def __init__(self, data, parent=None):
-        super(GridDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setupUi(self)
         self.auto_connect()
         self.data = None
@@ -526,7 +526,7 @@ class GridDialog(QtGui.QDialog, Ui_dlg_grid, smartsignal.SmartSignal):
 class BaseXedaScene(object):
 
     def __init__(self, config, project, *args, **kwargs):
-        super(BaseXedaScene, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.cfg = config
         self.proj = project
@@ -599,7 +599,7 @@ class BaseXedaScene(object):
 
         inside = []
         for i in self.items:
-            if rect.contains(i.getBounding()):
+            if rect.contains(i.getBounding()):#, proper=True):
                 inside.append(i)
         print('total items: ', len(inside))
         return inside
@@ -632,7 +632,7 @@ class SCHScene(BaseXedaScene):
 class PCBScene(BaseXedaScene):
 
     def __init__(self, *args, **kwargs):
-        super(PCBScene, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def cmdPlace(self, **kwargs):
         print('place!!!')
@@ -678,7 +678,7 @@ class PCBScene(BaseXedaScene):
 class BaseXedaItem(object):
 
     def __init__(self, parent, data=None):
-        super(BaseXedaItem, self).__init__()
+        super().__init__()
 
         self._x_selected = False
         self._x_x = 0
@@ -688,6 +688,7 @@ class BaseXedaItem(object):
 
         self.isGhost = False
         self.inEdit = False
+        self.drawClearance = True
 
         if data:
             self.unpack(data)
@@ -754,7 +755,7 @@ class BaseXedaItem(object):
 class BaseXedaInspector(QtGui.QDialog):
 
     def __init__(self, data, parent=None):
-        super(BaseXedaInspector, self).__init__(parent)
+        super().__init__(parent)
         self.setupUi(self)
 
         self.populate(data)
@@ -855,31 +856,36 @@ class PCBViaItem(BaseXedaItem):
         self._x_od = 50
         self._x_id = 28
         self._x_plated = False
-        self._x_net = None
+        self._x_net = '3V3'
         self._x_start = 1
         self._x_end = 32
         self._x_tent = False
         self._x_mask = None
 
-        super(PCBViaItem, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def getBounding(self):
-        r = QtCore.QRectF(-self._x_od/2, -self._x_od/2, self._x_od, self._x_od)
+        if self.drawClearance:
+            r = QtCore.QRectF(-self._x_od/2-10, -self._x_od/2-10, self._x_od+20, self._x_od+20)
+        else:
+            r = QtCore.QRectF(-self._x_od/2, -self._x_od/2, self._x_od, self._x_od)
+
         return r.translated(self._x_x, self._x_y)
 
     def _drawVia(self, p, color):
         p.setPen(QtGui.QPen(QtCore.Qt.NoPen))
         p.setBrush(QtGui.QBrush(color))
-        r = self.getBounding()
+        r = QtCore.QRectF(-self._x_od/2, -self._x_od/2, self._x_od, self._x_od).translated(self._x_x, self._x_y)
         p.drawEllipse(r)
         p.drawEllipse(QtCore.QRectF(-self._x_id/2, -self._x_id/2, self._x_id, self._x_id).translated(self._x_x, self._x_y))
 
         p.setPen(QtGui.QPen('red'))
-        p.drawText(r, QtCore.Qt.AlignCenter, 'SGND')
+        p.drawText(r, QtCore.Qt.AlignCenter, self._x_net)
 
-        p.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
-        p.setPen(QtGui.QPen(color))
-        p.drawEllipse(QtCore.QRectF(-self._x_od/2-10, -self._x_od/2-10, self._x_od+20, self._x_od+20).translated(self._x_x, self._x_y))
+        if self.drawClearance:
+            p.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+            p.setPen(QtGui.QPen(color))
+            p.drawEllipse(self.getBounding())
 
     def paintNormal(self, painter, layer):
         self._drawVia(painter, QtGui.QColor(200, 200, 200, 127))

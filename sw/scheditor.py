@@ -10,7 +10,7 @@ import xedaviewer
 
 class SCHEditor(QtGui.QMainWindow, Ui_SCHForm, smartsignal.SmartSignal):
     def __init__(self, project, parent=None):
-        super(SCHEditor, self).__init__(parent)
+        super().__init__(parent)
         self.setupUi(self)
 
         self.setWindowTitle('XEDA SCHEditor -')

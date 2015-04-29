@@ -7,7 +7,7 @@ import re
 class DimEdit(QtGui.QLineEdit):
 
     def __init__(self, *args, **kwargs):
-        super(DimEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.step = .1
         self.defunit = None
@@ -30,7 +30,7 @@ class DimEdit(QtGui.QLineEdit):
         if n:
             self.setText('{:.3f} {}'.format(self._resolve(n[0], n[1], n[2]), n[3]))
 
-        super(DimEdit, self).focusOutEvent(e)
+        super().focusOutEvent(e)
 
     def wheelEvent(self, e):
         n = self._explode(self.text())
@@ -54,7 +54,7 @@ class DimEdit(QtGui.QLineEdit):
             else: self.setDim(self.text(), 'mils')
             event.accept()
         else:
-            super(DimEdit, self).mousePressEvent(event)
+            super().mousePressEvent(event)
             # event.ignore()
 
     def _toMils(self, num, unit):
