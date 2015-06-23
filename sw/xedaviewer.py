@@ -8,7 +8,14 @@ import math
 import time
 
 
-
+# tpaste
+# tglue
+# tpeel  - areas aqui definem local de cobertura plastica removivel para protecao durante a solda
+# theatsink  - areas aqui definemcobertura com tinta condutora termica
+# tsilk
+# tcarbon  - linhas aqui incluem: trilha no top, abertura no mask e no carbon propriamente
+# tmask
+# top
 
 layersId = {
     0: 'edge',
@@ -30,11 +37,11 @@ layersId = {
     44: 'bsilk',
     45: 'bglue',
     46: 'bpaste',
-    47: 'aux1',
-    48: 'aux2',
-    49: 'aux3',
-    50: 'aux4',
-    51: 'aux5'
+    47: 'mec1',
+    48: 'mec2',
+    49: 'mec3',
+    50: 'mec4',
+    51: 'mec5'
     }
 
 layersId.update({v: k for k, v in layersId.items()})
@@ -238,6 +245,12 @@ class XedaViewer(QtGui.QWidget):
         return QtCore.QPoint(point.x()/self.scale+self.viewRect.left(),
                              point.y()/self.scale+self.viewRect.top()
                              )
+
+    def mapFromScene(self, point):
+        p = QtCore.QPoint((point.x()-self.viewRect.left())*self.scale, (point.y()-self.viewRect.top())*self.scale)
+        if self.geometry().contains(p):
+            return p
+        return None
 
     def wheelEvent(self, event):
         if event.orientation() == QtCore.Qt.Orientation.Vertical:

@@ -76,6 +76,8 @@
     </property>
     <addaction name="action_Content"/>
     <addaction name="separator"/>
+    <addaction name="actionCheck_for_update"/>
+    <addaction name="separator"/>
     <addaction name="action_About"/>
    </widget>
    <addaction name="menu_File"/>
@@ -171,6 +173,11 @@
   <action name="action_About">
    <property name="text">
     <string>&amp;About...</string>
+   </property>
+  </action>
+  <action name="actionCheck_for_update">
+   <property name="text">
+    <string>Check for &amp;update...</string>
    </property>
   </action>
  </widget>
