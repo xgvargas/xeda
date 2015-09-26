@@ -20,8 +20,10 @@ pcb:
     snap: 10
     layers:
         active: [44, 42, 10, 6, 4, 0]
+        single:
+        focus: no
         pairs:
-            - [0, 32]
+            - [10, 42]
     drc:
         class:
             - name: Default
