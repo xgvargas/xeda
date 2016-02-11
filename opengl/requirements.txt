@@ -1,0 +1,6 @@
+cx-freeze
+esky
+PySide
+smartside
+pyopengl
+euclid3
