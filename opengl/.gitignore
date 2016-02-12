@@ -7,12 +7,9 @@ build
 *_rc.py
 /venv
 /i18n/*.qm
-/parser.out
-/*_lex.py
-/*_tab.py
-*.extracted
+parser.out
+*_lex.py
+*_tab.py
+/ui/*.extracted
 *.sublime-workspace
 /ui/exeicon.ico
-/*.dxf
-/*.sk[bp]
-/*.dae
