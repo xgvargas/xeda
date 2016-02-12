@@ -44,32 +44,28 @@ add_module_names = True
 show_authors = False
 todo_include_todos = True
 pygments_style = 'sphinx'
-#source_encoding = 'utf-8-sig'
-
-# A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
 
 # HTML
 
+#html_logo = None
+#html_favicon = None
 html_theme = 'sphinx_rtd_theme'
+#html_theme_options = {}
+#html_theme_path = []
 html_static_path = ['_static']
+#html_extra_path = []
 html_use_smartypants = True
 html_show_sourcelink = False
 html_show_sphinx = True
 htmlhelp_basename = 'Xedadoc'
-#html_theme_options = {}
-#html_theme_path = []
 #html_title = None
 #html_short_title = None
-#html_logo = None
-#html_favicon = None
-#html_extra_path = []
-#html_last_updated_fmt = '%b %d, %Y'
 #html_sidebars = {}
 #html_additional_pages = {}
 #html_show_copyright = True
-#html_use_opensearch = 'link para a pagina'
+# html_use_opensearch = 'http://meu-link.com'
 
 
 # autodoc
