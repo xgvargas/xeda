@@ -6,6 +6,7 @@ from OpenGL.GLU import *
 import OpenGL.arrays.vbo as glvbo
 from shader import Shader
 import numpy as np
+import transf
 
 
 vertex_source = """
@@ -13,13 +14,16 @@ vertex_source = """
 
 layout (location = 0) in vec4 position;
 layout (location = 1) in vec3 color;
+layout (location = 2) in vec2 width;
 
 out vec3 point_color;
+out vec2 line_width;
 
 void main()
 {
     gl_Position = position;
     point_color = color;
+    line_width = width;
 }
 """
 
@@ -29,17 +33,21 @@ geometry_source = """
 layout (points) in;
 layout (line_strip, max_vertices = 2) out;
 
+uniform mat4 transform;
+
 in vec3 point_color[];
+in vec2 line_width[];
+
 out vec3 line_color;
 
 void main()
 {
     line_color = point_color[0];
 
-    gl_Position = vec4(gl_in[0].gl_Position.xy, 0., 1.);
+    gl_Position = transform * vec4(gl_in[0].gl_Position.xy, 0., 1.);
     EmitVertex();
 
-    gl_Position = vec4(gl_in[0].gl_Position.zw, 0., 1.);
+    gl_Position = transform * vec4(gl_in[0].gl_Position.zw, 0., 1.);
     EmitVertex();
 
     EndPrimitive();
@@ -95,13 +103,10 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
     def initializeGL(self):
         glClearColor(*(.8, .1, .4, 1))
 
-        # self.data = np.zeros((10000, 2), dtype=np.float32)
-        # self.data[:,0] = np.linspace(-1., 1., len(self.data))
-
         self.data = np.array([
-                              [0, 0, .5, .1, 1., 0., 0.],
-                              [0, .2, .8, 1, .5, .8, 0.],
-                              [.1, -.1, .3, .5, .2, .2, .9],
+                              [0, 0, .5, .1,   1., 0., 0.,   .05],
+                              [0, .2, .8, 1,   .5, .8, 0.,   .1],
+                              [0, 0, 3, 5,   .2, .2, .9,   .2],
                               ], dtype='f')
 
         self.vbo = glvbo.VBO(self.data)
@@ -109,6 +114,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.lineShader = Shader(vertex_source, fragment_source)
         self.lineShader.addGeometryShader(geometry_source)
         self.lineShader.link()
+
+        self.projection = np.eye(4, dtype='f')
 
         self.ready.emit()
 
@@ -119,14 +126,19 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, self.vbo.data[0].nbytes, self.vbo)
         glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, self.vbo.data[0].nbytes, self.vbo+12)
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, self.vbo.data[0].nbytes, self.vbo+4*4)
+        glEnableVertexAttribArray(2)
+        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, self.vbo.data[0].nbytes, self.vbo+(4+3)*4)
         self.lineShader.install()
+        mat = self.lineShader.getUniform('transform')
+        glUniformMatrix4fv(mat, 1, GL_FALSE, self.projection)
         glDrawArrays(GL_POINTS, 0, len(self.data))
         self.lineShader.uninstall()
         self.vbo.unbind()
 
     def resizeGL(self, width, height):
         glViewport(0, 0, width, height)
+        self.projection = transf.ortho(0, width, height, 0, 1, -1)
 
 
 class XedaPCBViewer(XedaViewerBase):
