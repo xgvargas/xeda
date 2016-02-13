@@ -2,10 +2,10 @@
 
 from OpenGL.GL import *
 
-class Shader(object):
+class ShaderProgram(object):
 
     def __init__(self, vertex=None, fragment=None, geometry=None):
-        """Create a new shader program.
+        """Create a new shade program.
 
         Args:
             vertex (str, optional): vertex code
@@ -51,7 +51,7 @@ class Shader(object):
             int: shader ID
         """
         if not self.program:
-            shader = Shader.compile(code, GL_VERTEX_SHADER)
+            shader = ShaderProgram.compile(code, GL_VERTEX_SHADER)
             self.shaders.append(shader)
             return shader
 
@@ -65,7 +65,7 @@ class Shader(object):
             int: shader ID
         """
         if not self.program:
-            shader = Shader.compile(code, GL_FRAGMENT_SHADER)
+            shader = ShaderProgram.compile(code, GL_FRAGMENT_SHADER)
             self.shaders.append(shader)
             return shader
 
@@ -79,7 +79,7 @@ class Shader(object):
             int: shader ID
         """
         if not self.program:
-            shader = Shader.compile(code, GL_GEOMETRY_SHADER)
+            shader = ShaderProgram.compile(code, GL_GEOMETRY_SHADER)
             self.shaders.append(shader)
             return shader
 
@@ -106,7 +106,7 @@ class Shader(object):
             for shader in self.shaders:
                 glDeleteShader(shader)
 
-            self.shaders = []
+            self.shaders = None
 
         return self.program
 
@@ -128,6 +128,17 @@ class Shader(object):
             int: Location of this uniform.
         """
         return glGetUniformLocation(self.program, name)
+
+    def getAttrib(self, name):
+        """Return the location of a named attribute.
+
+        Args:
+            name (str): Attribute name.
+
+        Returns:
+            int: Location of this attribute.
+        """
+        return glGetAttribLocation(self.program, name)
 
     def install(self):
         """Set OpenGL to use this program.

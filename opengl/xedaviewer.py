@@ -4,70 +4,10 @@ from PySide import QtGui, QtCore, QtOpenGL
 from OpenGL.GL import *
 from OpenGL.GLU import *
 import OpenGL.arrays.vbo as glvbo
-from shader import Shader
 import numpy as np
 import transf
-
-
-vertex_source = """
-#version 330
-
-layout (location = 0) in vec4 position;
-layout (location = 1) in vec3 color;
-layout (location = 2) in vec2 width;
-
-out vec3 point_color;
-out vec2 line_width;
-
-void main()
-{
-    gl_Position = position;
-    point_color = color;
-    line_width = width;
-}
-"""
-
-geometry_source = """
-#version 330
-
-layout (points) in;
-layout (line_strip, max_vertices = 2) out;
-
-uniform mat4 view;
-uniform mat4 projection;
-
-in vec3 point_color[];
-in vec2 line_width[];
-
-out vec3 line_color;
-
-void main()
-{
-    line_color = point_color[0];
-
-    gl_Position = projection * view * vec4(gl_in[0].gl_Position.xy, 0., 1.);
-    EmitVertex();
-
-    gl_Position = projection * view * vec4(gl_in[0].gl_Position.zw, 0., 1.);
-    EmitVertex();
-
-    EndPrimitive();
-}
-"""
-
-fragment_source = """
-#version 330
-
-precision highp float;
-
-in vec3 line_color;
-out vec4 out_color;
-
-void main()
-{
-    out_color = vec4(line_color, 1.);
-}
-"""
+import shader
+import shader.line as shaderLine
 
 
 class XedaViewerBase(QtOpenGL.QGLWidget):
@@ -80,6 +20,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.lastPos = QtCore.QPoint()
 
     def minimumSizeHint(self):
+        """Hint of the minimum size this widget accepts.
+        """
         return QtCore.QSize(50, 50)
 
     # def sizeHint(self):
@@ -102,7 +44,14 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
     #     self.lastPos = QtCore.QPoint(event.pos())
 
     def initializeGL(self):
+        """Event to initialize OpenGL context.
+
+        Create shaders, VBOs and VAOs. Also link the layers to each VBO.
+        """
         glClearColor(*(.8, .1, .4, 1))
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         self.data = np.array([
                               [0, 0, .5, .1,   1., 0., 0.,   .05],
@@ -112,9 +61,14 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
 
         self.vbo = glvbo.VBO(self.data)
 
-        self.lineShader = Shader(vertex_source, fragment_source)
-        self.lineShader.addGeometryShader(geometry_source)
+        self.lineShader = shader.ShaderProgram(shaderLine.vertex, shaderLine.fragment, shaderLine.geometry)
         self.lineShader.link()
+        # self.viaShader = Shader(via_vertex, via_fragment, via_geometry)
+        # self.viaShader.link()
+        # self.textShader = Shader(text_vertex, text_fragment, text_geometry)
+        # self.textShader.link()
+        # self.padShader = Shader(pad_vertex, pad_fragment, pad_geometry)
+        # self.padShader.link()
 
         # self.model = np.eye(4, dtype='f')
         self.view = np.eye(4, dtype='f')
@@ -123,6 +77,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.ready.emit()
 
     def paintGL(self):
+        """Event to repaint the scene.
+        """
         glClear(GL_COLOR_BUFFER_BIT)
 
         self.vbo.bind()
@@ -141,10 +97,210 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.lineShader.uninstall()
         self.vbo.unbind()
 
+
+
+
     def resizeGL(self, width, height):
+        """Event to adjust viewport and projection when widget is resized.
+
+        Args:
+            width (int): new widget width
+            height (int): new widget height
+        """
         glViewport(0, 0, width, height)
         # self.projection = transf.ortho(0, width, height, 0, 1, -1)
         self.projection = transf.ortho(-6, 6, -6, 6, 1, -1)
+
+    def mapToScene(self, point):
+        """Map a screen coordinate to scene coordinate.
+
+        Args:
+            point (QPoint): screen point
+
+        Returns:
+            QPoint: scene point
+        """
+        pass
+
+    def mapFromScene(self, point):
+        """Map a scene coordinate to screen coordinate.
+
+        Args:
+            point (QPoint): scene coordinate
+
+        Returns:
+            QPoint: screen coordinate
+        """
+        pass
+
+    def wheelEvent(self, event):
+        """Event to handle zoom.
+        """
+        if event.orientation() == QtCore.Qt.Orientation.Vertical:
+            if event.delta() > 0:
+                self.zoomIn()
+            else:
+                self.zoomOut()
+            event.accept()
+        else:
+            event.ignore()
+
+    def enterEvent(self, event):
+        pass
+        # self.setFocus()
+
+    def leaveEvent(self, event):
+        pass
+        # super().leaveEvent(event)
+        # self._snap_pos = None
+        # self.repaint()
+        # self.clearFocus()
+
+    def mousePressEvent(self, event):
+        # super().mousePressEvent(event)
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            pass
+            # i = self._discoverItem(None)
+            #TODO quando tiver mas de um item isso sera assincrono.... fudeu
+
+            # um click sem nada abaixo inicia um rubber para selecionar items
+            # com um item abaixo coloca ele em modo de destaque
+            # com um item abaixo e shift alterna estado dele na selecao
+            # com um item e move sem soltar, move o item ou a selecao caso ele faca parte delta
+            # se tiver mais de um item entao motra menu perguntando qual
+            # ignora tal menu se algum dos items estiver na lista de prioridades
+
+        elif event.button() == QtCore.Qt.MouseButton.MiddleButton:
+            self._pan_pos = event.pos()
+            event.accept()
+
+        elif event.button() == QtCore.Qt.MouseButton.RightButton:
+            m = QtGui.QMenu(self)
+            m.addAction('texte')
+            m.addAction('texte')
+            m.addSeparator()
+            m.addAction('teste com xix??')
+            m.exec_(event.globalPos())
+        else:
+            event.ignore()
+
+    def mouseMoveEvent(self, event):
+        # super().mouseMoveEvent(event)
+        # self._mouse_pos = self.mapToScene(event.pos())
+        # n = self.scene.proj.snap
+        # self._snap_pos = QtCore.QPoint((self._mouse_pos.x()//n)*n, (self._mouse_pos.y()//n)*n)
+        # # self.moveEvent.emit(self._mouse_pos)
+        # self.moveEvent.emit(self._snap_pos-self.origin)
+        # self.repaint()
+        #self._discoverItem(None) #TODO quando tiver mas de um item isso sera assincrono.... fudeu
+        if self._pan_pos:
+            # p = event.pos()-self._pan_pos
+            # self._pan_pos = event.pos()
+            # self.viewRect.setLeft(min(self.viewSize.width()-self.viewRect.width(),
+            #                           max(0, self.viewRect.left()-p.x()/self.scale)))
+            # self.viewRect.setTop(min(self.viewSize.height()-self.viewRect.height(),
+            #                          max(0, self.viewRect.top()-p.y()/self.scale)))
+            # self.repaint()
+            event.accept()
+        else:
+            event.ignore()
+
+    def mouseReleaseEvent(self, event):
+        # super().mouseReleaseEvent(event)
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            pass
+            #TODO solta o que estava arrastando...
+        elif event.button() == QtCore.Qt.MouseButton.MiddleButton:
+            self._pan_pos = None
+            event.accept()
+        # elif event.button() == QtCore.Qt.MouseButton.RightButton:
+        #     pass
+        else:
+            event.ignore()
+
+    def mouseDoubleClickEvent(self, event):
+        i = self._discoverItem(None) #TODO quando tiver mas de um item isso sera assincrono.... fudeu
+        if i:
+            if event.button() == QtCore.Qt.MouseButton.LeftButton:
+                if isinstance(i, BaseXedaItem):
+                    i.inspect()
+            elif event.button() == QtCore.Qt.MouseButton.MiddleButton:
+                pass
+
+                #TODO mostra uma regua, com hip e angulo
+
+    def zoomIn(self, pos=None):
+        """Zoom a single step in.
+
+        Args:
+            pos (QPoint, optional): center of the zoom in screen coordinate. If `None` (default), the zoom center
+                will be at the widget center.
+        """
+        pass
+        # if self.scale < 1.6:
+        #     self.scale *= 1.25
+        #     cursor = self.mapFromGlobal(QtGui.QCursor.pos())
+        #     if not self.contentsRect().contains(cursor):
+        #         cursor = self.contentsRect().center()
+        #     self.matchPoints(self._mouse_pos, cursor)
+
+    def zoomOut(self, pos=None):
+        """Zoom a single step out.
+
+        Args:
+            pos (QPoint, optional): center of the zoom in screen coordinate. If `None` (default), the zoom
+                center will be the widget center.
+        """
+        pass
+        # if self.scale > .04:
+        #     self.scale /= 1.25
+        #     cursor = self.mapFromGlobal(QtGui.QCursor.pos())
+        #     if not self.contentsRect().contains(cursor):
+        #         cursor = self.contentsRect().center()
+        #     self.matchPoints(self._mouse_pos, cursor)
+
+    def zoomFit(self):
+        """Zoom to fit whole scene.
+        """
+        pass
+        #TODO ajustar a escala....
+        # self.matchPoints(self.scene.getBounding().center(), self.contentsRect().center())
+
+    def refreshView(self):
+        """Repaint whole scene.
+        """
+        pass
+
+    def setGrid(self, grid1, grid2, weak=False):
+        """Set the grid size.
+
+        Args:
+            grid1 (float): grid 1 size. > 1 to disable it.
+            grid2 (float): grid 2 size. > 1 to disable it.
+            weak (bool, optional): If True the grid will fade as it zoom out.
+        """
+        pass
+        # self.scene.proj.grid1 = grid1
+        # self.scene.proj.grid2 = grid2
+        # self.scene.proj.weakgrid = weak
+        # self.repaint(True)
+
+    def setSnap(self, snap):
+        pass
+        # self.scene.proj.snap = snap
+        # self.repaint()
+
+    def useRuler(self, pos):
+        """Display the meassuring ruler.
+
+        Args:
+            pos (QPoint): center of the ruler in screen coordinate.
+        """
+        pass
+        # self._rulerOrigin = self._snap_pos
+        # self.repaint()
+
+
 
 
 class XedaPCBViewer(XedaViewerBase):
