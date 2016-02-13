@@ -8,6 +8,7 @@ import numpy as np
 import transf
 import shader
 import shader.line as shaderLine
+import math
 
 
 class XedaViewerBase(QtOpenGL.QGLWidget):
@@ -27,54 +28,47 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
     # def sizeHint(self):
     #     return QtCore.QSize(400, 400)
 
-    # def mousePressEvent(self, event):
-    #     self.lastPos = QtCore.QPoint(event.pos())
-
-    # def mouseMoveEvent(self, event):
-    #     dx = event.x() - self.lastPos.x()
-    #     dy = event.y() - self.lastPos.y()
-
-    #     if event.buttons() & QtCore.Qt.LeftButton:
-    #         self.setXRotation(self.xRot + 8 * dy)
-    #         self.setYRotation(self.yRot + 8 * dx)
-    #     elif event.buttons() & QtCore.Qt.RightButton:
-    #         self.setXRotation(self.xRot + 8 * dy)
-    #         self.setZRotation(self.zRot + 8 * dx)
-
-    #     self.lastPos = QtCore.QPoint(event.pos())
-
     def initializeGL(self):
         """Event to initialize OpenGL context.
 
         Create shaders, VBOs and VAOs. Also link the layers to each VBO.
         """
-        glClearColor(*(.8, .1, .4, 1))
+        glClearColor(*(.2, .1, .2, 1))
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         self.data = np.array([
-                              [0, 0, .5, .1,   1., 0., 0.,   .05],
-                              [0, .2, .8, 1,   .5, .8, 0.,   .1],
-                              [0, 0, 3, 5,   .2, .2, .9,   .2],
+                              [0, 0, 0, 5.5,   1., 0., 0.,   .5],
+                              [0, 0, -5.5, 0,   0., 0., 1.,   .8],
+                              [0, 0, 0, -5.5,   1., 0., 1.,   .5],
                               ], dtype='f')
 
         self.vbo = glvbo.VBO(self.data)
 
-        self.lineShader = shader.ShaderProgram(shaderLine.vertex, shaderLine.fragment, shaderLine.geometry)
-        self.lineShader.link()
-        # self.viaShader = Shader(via_vertex, via_fragment, via_geometry)
-        # self.viaShader.link()
-        # self.textShader = Shader(text_vertex, text_fragment, text_geometry)
-        # self.textShader.link()
-        # self.padShader = Shader(pad_vertex, pad_fragment, pad_geometry)
-        # self.padShader.link()
+        self.lineShader = shader.ShaderProgram(codefile='shader/line.glsl', link=True)
 
         # self.model = np.eye(4, dtype='f')
         self.view = np.eye(4, dtype='f')
         self.projection = np.eye(4, dtype='f')
 
         self.ready.emit()
+
+        self._angle = [0]*10
+        self.startTimer(1000/30)
+
+    def timerEvent(self, event):
+        self._angle[0] += .06
+        self.data[0][2] = 5.5*math.cos(self._angle[0])
+        self.data[0][3] = 5.5*math.sin(self._angle[0])
+        self._angle[1] += .05
+        self.data[1][2] = 5*math.cos(self._angle[1])
+        self.data[1][3] = 5*math.sin(self._angle[1])
+        self._angle[2] += .08
+        self.data[2][2] = 4*math.cos(self._angle[2])
+        self.data[2][3] = 4*math.sin(self._angle[2])
+        self.vbo = glvbo.VBO(self.data)
+        self.repaint()
 
     def paintGL(self):
         """Event to repaint the scene.
@@ -93,6 +87,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, self.view)
         projectionLoc = self.lineShader.getUniform('projection')
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, self.projection)
+        resolutionLoc = self.lineShader.getUniform('resolution')
+        glUniform1i(resolutionLoc, 4)
         glDrawArrays(GL_POINTS, 0, len(self.data))
         self.lineShader.uninstall()
         self.vbo.unbind()
@@ -108,8 +104,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             height (int): new widget height
         """
         glViewport(0, 0, width, height)
-        # self.projection = transf.ortho(0, width, height, 0, 1, -1)
-        self.projection = transf.ortho(-6, 6, -6, 6, 1, -1)
+        self.projection = transf.ortho(-width/height, width/height, -1, 1, -1, 1)
+        transf.scale(self.projection, 1/6)
 
     def mapToScene(self, point):
         """Map a screen coordinate to scene coordinate.
@@ -236,6 +232,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             pos (QPoint, optional): center of the zoom in screen coordinate. If `None` (default), the zoom center
                 will be at the widget center.
         """
+        transf.scale(self.projection, 1.25)
+        self.repaint()
         pass
         # if self.scale < 1.6:
         #     self.scale *= 1.25
@@ -251,6 +249,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             pos (QPoint, optional): center of the zoom in screen coordinate. If `None` (default), the zoom
                 center will be the widget center.
         """
+        transf.scale(self.projection, 1/1.25)
+        self.repaint()
         pass
         # if self.scale > .04:
         #     self.scale /= 1.25

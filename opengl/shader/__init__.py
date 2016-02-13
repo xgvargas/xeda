@@ -4,19 +4,51 @@ from OpenGL.GL import *
 
 class ShaderProgram(object):
 
-    def __init__(self, vertex=None, fragment=None, geometry=None):
+    def __init__(self, vertex=None, fragment=None, geometry=None, codefile=None, link=False):
         """Create a new shade program.
 
         Args:
             vertex (str, optional): vertex code
             fragment (str, optional): fragment code
             geometry (str, optional): geometry code
+            codefile (str, optional): filename with GLSL code. Each shader inside the file **MUST** be started by
+                a comment like: ``//====== BLOCK: VERTEX``. Use any number of equal signals and all uppercased.
+            link (bool, optional): if True then the program will be linked with no chance for more shaders to be added.
+
+        Raises:
+            RuntimeError: An invalid GLSL code was supplied.
         """
         self.shaders = []
         self.program = 0
+
         if vertex: self.addVertexShader(vertex)
         if fragment: self.addFragmentShader(fragment)
         if geometry: self.addGeometryShader(geometry)
+
+        if codefile:
+            import re
+            block, code = '', ''
+            def aux():
+                if block == 'VERTEX': self.addVertexShader(code)
+                elif block == 'GEOMETRY': self.addGeometryShader(code)
+                elif block == 'FRAGMENT': self.addFragmentShader(code)
+
+            with open(codefile, 'r') as fh:
+                for line in fh:
+                    b = re.match(r'\s*//=+\s*BLOCK:\s+(\w+)', line)
+                    if b:
+                        if b.group(1) in ('VERTEX', 'GEOMETRY', 'FRAGMENT'):
+                            aux()
+                            block, code = b.group(1), ''
+                        else:
+                            raise RuntimeError('Invalid GLSL block name {}'.format(b.group(1)))
+                    else:
+                        if block:
+                            code += line
+                aux()
+
+        if link:
+            self.link()
 
     @staticmethod
     def compile(code, kind):
