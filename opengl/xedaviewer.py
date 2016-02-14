@@ -7,7 +7,6 @@ import OpenGL.arrays.vbo as glvbo
 import numpy as np
 import transf
 import shader
-import shader.line as shaderLine
 import math
 
 
@@ -35,13 +34,23 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         """
         glClearColor(*(.2, .1, .2, 1))
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND)
+        # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glBlendEquation(GL_MAX)
+        # glfwWindowHint(GLFW_SAMPLES, 4)
+        # glEnable(GL_MULTISAMPLE)
+        # glEnable(GL_LINE_SMOOTH)
+        # glEnable(GL_POLYGON_SMOOTH)
+        # glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+        # glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
+        # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
         self.data = np.array([
-                              [0, 0, 0, 5.5,   1., 0., 0.,   .5],
-                              [0, 0, -5.5, 0,   0., 0., 1.,   .8],
-                              [0, 0, 0, -5.5,   1., 0., 1.,   .5],
+                              [0, 0, -5.5, 0,   0., 0., 1., .6,   1],
+                              [0, 0, 0, 5.5,   1., 0., 0., .6,   .5],
+                              [0, 0, 0, -5.5,   1., 1., 0, .6,   .6],
+                              [-5, 0, 0, -5.5,   1., 1., 0, .6,   .6],
+                              [5.5, -5, -5.5, 0,   0., 0., 1., .6,   1],
                               ], dtype='f')
 
         self.vbo = glvbo.VBO(self.data)
@@ -55,18 +64,22 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.ready.emit()
 
         self._angle = [0]*10
-        self.startTimer(1000/30)
+        self.startTimer(1000/20)
 
     def timerEvent(self, event):
         self._angle[0] += .06
         self.data[0][2] = 5.5*math.cos(self._angle[0])
         self.data[0][3] = 5.5*math.sin(self._angle[0])
+        self.data[4][2] = 5.5*math.cos(self._angle[0])
+        self.data[4][3] = 5.5*math.sin(self._angle[0])
         self._angle[1] += .05
         self.data[1][2] = 5*math.cos(self._angle[1])
         self.data[1][3] = 5*math.sin(self._angle[1])
         self._angle[2] += .08
         self.data[2][2] = 4*math.cos(self._angle[2])
         self.data[2][3] = 4*math.sin(self._angle[2])
+        self.data[3][2] = 4*math.cos(self._angle[2])
+        self.data[3][3] = 4*math.sin(self._angle[2])
         self.vbo = glvbo.VBO(self.data)
         self.repaint()
 
@@ -74,27 +87,25 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         """Event to repaint the scene.
         """
         glClear(GL_COLOR_BUFFER_BIT)
+        glEnable(GL_MULTISAMPLE)
 
         self.vbo.bind()
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, self.vbo.data[0].nbytes, self.vbo)
         glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, self.vbo.data[0].nbytes, self.vbo+4*4)
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, self.vbo.data[0].nbytes, self.vbo+4*4)
         glEnableVertexAttribArray(2)
-        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, self.vbo.data[0].nbytes, self.vbo+(4+3)*4)
+        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, self.vbo.data[0].nbytes, self.vbo+(4+4)*4)
         self.lineShader.install()
         viewLoc = self.lineShader.getUniform('view')
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, self.view)
         projectionLoc = self.lineShader.getUniform('projection')
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, self.projection)
         resolutionLoc = self.lineShader.getUniform('resolution')
-        glUniform1i(resolutionLoc, 4)
+        glUniform1i(resolutionLoc, 12)
         glDrawArrays(GL_POINTS, 0, len(self.data))
         self.lineShader.uninstall()
         self.vbo.unbind()
-
-
-
 
     def resizeGL(self, width, height):
         """Event to adjust viewport and projection when widget is resized.
@@ -106,6 +117,10 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         glViewport(0, 0, width, height)
         self.projection = transf.ortho(-width/height, width/height, -1, 1, -1, 1)
         transf.scale(self.projection, 1/6)
+
+
+
+
 
     def mapToScene(self, point):
         """Map a screen coordinate to scene coordinate.
@@ -190,13 +205,14 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         # self.repaint()
         #self._discoverItem(None) #TODO quando tiver mas de um item isso sera assincrono.... fudeu
         if self._pan_pos:
-            # p = event.pos()-self._pan_pos
-            # self._pan_pos = event.pos()
+            p = event.pos()-self._pan_pos
+            self._pan_pos = event.pos()
+            transf.translate(self.view, p.x()/36, -p.y()/36, 0)
+            self.repaint()
             # self.viewRect.setLeft(min(self.viewSize.width()-self.viewRect.width(),
             #                           max(0, self.viewRect.left()-p.x()/self.scale)))
             # self.viewRect.setTop(min(self.viewSize.height()-self.viewRect.height(),
             #                          max(0, self.viewRect.top()-p.y()/self.scale)))
-            # self.repaint()
             event.accept()
         else:
             event.ignore()
