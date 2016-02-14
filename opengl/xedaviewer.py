@@ -15,7 +15,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
     ready = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super().__init__(None)
+        super().__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
 
         self.lastPos = QtCore.QPoint()
 
@@ -38,7 +38,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glBlendEquation(GL_MAX)
         # glfwWindowHint(GLFW_SAMPLES, 4)
-        # glEnable(GL_MULTISAMPLE)
+        glEnable(GL_MULTISAMPLE)
         # glEnable(GL_LINE_SMOOTH)
         # glEnable(GL_POLYGON_SMOOTH)
         # glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
@@ -56,6 +56,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.vbo = glvbo.VBO(self.data)
 
         self.lineShader = shader.ShaderProgram(codefile='shader/line.glsl', link=True)
+        self.viaShader = shader.ShaderProgram(codefile='shader/via.glsl', link=True)
 
         # self.model = np.eye(4, dtype='f')
         self.view = np.eye(4, dtype='f')
@@ -64,7 +65,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.ready.emit()
 
         self._angle = [0]*10
-        self.startTimer(1000/20)
+        self.startTimer(1000/65)
 
     def timerEvent(self, event):
         self._angle[0] += .06
@@ -87,7 +88,6 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         """Event to repaint the scene.
         """
         glClear(GL_COLOR_BUFFER_BIT)
-        glEnable(GL_MULTISAMPLE)
 
         self.vbo.bind()
         glEnableVertexAttribArray(0)
@@ -103,6 +103,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, self.projection)
         resolutionLoc = self.lineShader.getUniform('resolution')
         glUniform1i(resolutionLoc, 12)
+        # glEnable(GL_MULTISAMPLE)
         glDrawArrays(GL_POINTS, 0, len(self.data))
         self.lineShader.uninstall()
         self.vbo.unbind()

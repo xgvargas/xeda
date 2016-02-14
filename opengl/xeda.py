@@ -8,6 +8,7 @@
 
 import sys, os
 from pcb_ui import *
+from PySide import QtOpenGL
 import smartside.signal as smartsignal
 import math
 
@@ -40,6 +41,18 @@ if __name__ == "__main__":
     # translator = QtCore.QTranslator()
     # translator.load('i18n/'+cfg['language']+'.qm')
     # app.installTranslator(translator)
+
+    if not QtOpenGL.QGLFormat.hasOpenGL():
+        QMessageBox.information(0, "OpenGL pbuffers",
+                                "This system does not support OpenGL.",
+                                QMessageBox.Ok)
+        sys.exit(1)
+
+    f = QtOpenGL.QGLFormat.defaultFormat()
+    f.setSampleBuffers(True)
+    QtOpenGL.QGLFormat.setDefaultFormat(f)
+
+
     window = PCB()
     window.show()
     # window.print_all_signals()
