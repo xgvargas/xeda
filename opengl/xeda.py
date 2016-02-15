@@ -11,6 +11,7 @@ from pcb_ui import *
 from PySide import QtOpenGL
 import smartside.signal as smartsignal
 import math
+# import freetype
 
 
 __author__ = 'Gustavo Vargas <xgvargas@gmail.com>'

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from OpenGL.GL import *
+import re
 
 class ShaderProgram(object):
 
@@ -20,13 +21,13 @@ class ShaderProgram(object):
         """
         self.shaders = []
         self.program = 0
+        self.uniform = {}
 
         if vertex: self.addVertexShader(vertex)
         if fragment: self.addFragmentShader(fragment)
         if geometry: self.addGeometryShader(geometry)
 
         if codefile:
-            import re
             block, code = '', ''
             def aux():
                 if block == 'VERTEX': self.addVertexShader(code)
@@ -73,6 +74,10 @@ class ShaderProgram(object):
 
         return shader
 
+    def _uniformFinder(self, code):
+        for u in re.finditer(r'uniform\s+[^;]{2,}\s+(\w+);', code):
+            self.uniform[u.group(1)] = None
+
     def addVertexShader(self, code):
         """Compiles a vertex shader code and add to program.
 
@@ -85,6 +90,7 @@ class ShaderProgram(object):
         if not self.program:
             shader = ShaderProgram.compile(code, GL_VERTEX_SHADER)
             self.shaders.append(shader)
+            self._uniformFinder(code)
             return shader
 
     def addFragmentShader(self, code):
@@ -99,6 +105,7 @@ class ShaderProgram(object):
         if not self.program:
             shader = ShaderProgram.compile(code, GL_FRAGMENT_SHADER)
             self.shaders.append(shader)
+            self._uniformFinder(code)
             return shader
 
     def addGeometryShader(self, code):
@@ -113,10 +120,14 @@ class ShaderProgram(object):
         if not self.program:
             shader = ShaderProgram.compile(code, GL_GEOMETRY_SHADER)
             self.shaders.append(shader)
+            self._uniformFinder(code)
             return shader
 
     def link(self):
         """Link all added shaders to program.
+
+        Link will also look for all uniforms and the dict ``ShaderProgram.uniform`` will be populated
+        with all their locations.
 
         Raises:
             RuntimeError: Maybe a linker error....
@@ -140,6 +151,10 @@ class ShaderProgram(object):
 
             self.shaders = None
 
+            for u in self.uniform.keys():
+                l = glGetUniformLocation(self.program, u)
+                self.uniform[u] = l
+
         return self.program
 
     def getProgram(self):
@@ -159,7 +174,8 @@ class ShaderProgram(object):
         Returns:
             int: Location of this uniform.
         """
-        return glGetUniformLocation(self.program, name)
+        # return glGetUniformLocation(self.program, name)
+        return self.uniform.get(name, None)
 
     def getAttrib(self, name):
         """Return the location of a named attribute.
