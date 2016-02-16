@@ -8,6 +8,8 @@ import numpy as np
 import transf
 import shader
 import math
+import random
+import bff
 
 
 class XedaViewerBase(QtOpenGL.QGLWidget):
@@ -19,23 +21,32 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
 
         self.lastPos = QtCore.QPoint()
 
-        self.lineData = np.array([
-                              [0, 0, -5.5*2.54e6, 0,   0., 0., 1., .6,   1*2.54e6],
-                              [0, 0, 0, 5.5*2.54e6,   1., 0., 0., .6,   .5*2.54e6],
-                              [0, 0, 0, -5.5*2.54e6,   1., 1., 0, .6,   .6*2.54e6],
-                              [-5, 0, 0, -5.5*2.54e6,   1., 1., 0, .6,   .6*2.54e6],
-                              [5.5*2.54e6, -5.5*2.54e6, -5.5*2.54e6, 0,   0., 0., 1., .6,   1*2.54e6],
-                              ], dtype='f')
+        # self.line_data = np.array([
+        #                       [0, 0, -5.5*2.54e6, 0,   0., 0., 1., .6,   1*2.54e6],
+        #                       [0, 0, 0, 5.5*2.54e6,   1., 0., 0., .6,   .5*2.54e6],
+        #                       [0, 0, 0, -5.5*2.54e6,   1., 1., 0, .6,   .6*2.54e6],
+        #                       [-5, 0, 0, -5.5*2.54e6,   1., 1., 0, .6,   .6*2.54e6],
+        #                       [5.5*2.54e6, -5.5*2.54e6, -5.5*2.54e6, 0,   0., 0., 1., .6,   1*2.54e6],
+        #                       ], dtype='f')
 
         v = []
-        for x in range(-100, 100, 2):
-            for y in range(-100, 100, 2):
+        for x in range(-100, 100, 4):
+            for y in range(-100, 100, 4):
                 v.append([x*2.54e5, y*2.54e5, .045*2.54e6, .028*2.54e6])
+        self.via_data = np.array(v, dtype='f')
 
-        self.viaData = np.array(v, dtype='f')
+        l = []
+        for x in range(-100, 100, 4):
+            for y in range(-100, 100, 4):
+                l.append([x*2.54e5, y*2.54e5, x*2.54e5+.8*2.54e6, y*2.54e5+.8*2.54e6,    random.random(), random.random(), random.random(), .6,   .014*2.54e6])
+        self.line_data = np.array(l, dtype='f')
 
-        self.grid1Data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), .1*2.54e6, .1*2.54e6)
-        self.grid2Data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), 1*2.54e6, 1*2.54e6)
+        self.grid1_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), .1*2.54e6, .1*2.54e6)
+        self.grid2_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), 1*2.54e6, 1*2.54e6)
+
+        self.view = np.identity(4, dtype='f')
+        transf.scale(self.view, 1e-7)
+        self.projection = np.identity(4, dtype='f')
 
     def _generateGrid(self, w, h, dx, dy):
         g = []
@@ -74,40 +85,39 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         # glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
         # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
-        self.gridShader = shader.ShaderProgram(codefile='shader/grid.glsl', link=True)
-        self.lineShader = shader.ShaderProgram(codefile='shader/line.glsl', link=True)
-        self.viaShader = shader.ShaderProgram(codefile='shader/via.glsl', link=True)
+        self.grid_shader = shader.ShaderProgram(codefile='shader/grid.glsl', link=True)
+        self.line_shader = shader.ShaderProgram(codefile='shader/line.glsl', link=True)
+        self.via_shader = shader.ShaderProgram(codefile='shader/via.glsl', link=True)
 
-        self.grid1VBO = glvbo.VBO(self.grid1Data)
-        self.grid2VBO = glvbo.VBO(self.grid2Data)
-        self.lineVBO = glvbo.VBO(self.lineData)
-        self.viaVBO = glvbo.VBO(self.viaData)
+        self.grid1_vbo = glvbo.VBO(self.grid1_data)
+        self.grid2_vbo = glvbo.VBO(self.grid2_data)
+        self.line_vbo = glvbo.VBO(self.line_data)
+        self.via_vbo = glvbo.VBO(self.via_data)
 
-        # self.model = np.eye(4, dtype='f')
-        self.view = np.eye(4, dtype='f')
-        self.projection = np.eye(4, dtype='f')
+        self.font = bff.BFF('arial14.bff')
 
         self.ready.emit()
 
         self._angle = [0]*10
-        self.startTimer(1000/30)
+        self.startTimer(1000/80)
 
     def timerEvent(self, event):
         self._angle[0] += .04
-        self.lineData[0][2] = 5.5*2.54e6*math.cos(self._angle[0])
-        self.lineData[0][3] = 5.5*2.54e6*math.sin(self._angle[0])
-        self.lineData[4][2] = 5.5*2.54e6*math.cos(self._angle[0])
-        self.lineData[4][3] = 5.5*2.54e6*math.sin(self._angle[0])
+        self.line_data[0][2] = 5.5*2.54e6*math.cos(self._angle[0])
+        self.line_data[0][3] = 5.5*2.54e6*math.sin(self._angle[0])
+        self.line_data[4][2] = 5.5*2.54e6*math.cos(self._angle[0])
+        self.line_data[4][3] = 5.5*2.54e6*math.sin(self._angle[0])
         self._angle[1] += .1
-        self.lineData[1][2] = 5*2.54e6*math.cos(self._angle[1])
-        self.lineData[1][3] = 5*2.54e6*math.sin(self._angle[1])
+        self.line_data[1][2] = 5*2.54e6*math.cos(self._angle[1])
+        self.line_data[1][3] = 5*2.54e6*math.sin(self._angle[1])
         self._angle[2] += -.09
-        self.lineData[2][2] = 4*2.54e6*math.cos(self._angle[2])
-        self.lineData[2][3] = 4*2.54e6*math.sin(self._angle[2])
-        self.lineData[3][2] = 4*2.54e6*math.cos(self._angle[2])
-        self.lineData[3][3] = 4*2.54e6*math.sin(self._angle[2])
-        # self.lineVBO = glvbo.VBO(self.lineData)
-        self.lineVBO.set_array(self.lineData)
+        self.line_data[2][2] = 4*2.54e6*math.cos(self._angle[2])
+        self.line_data[2][3] = 4*2.54e6*math.sin(self._angle[2])
+        self.line_data[3][2] = 4*2.54e6*math.cos(self._angle[2])
+        self.line_data[3][3] = 4*2.54e6*math.sin(self._angle[2])
+        # self.line_vbo = glvbo.VBO(self.line_data)
+        # self.line_vbo.copy_data()
+        self.line_vbo.set_array(self.line_data)
         self.repaint()
 
     def paintGL(self):
@@ -116,57 +126,57 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         glClear(GL_COLOR_BUFFER_BIT)
 
         #grid
-        self.gridShader.install()
-        glUniformMatrix4fv(self.gridShader.uniform['view'], 1, GL_FALSE, self.view)
-        glUniformMatrix4fv(self.gridShader.uniform['projection'], 1, GL_FALSE, self.projection)
+        self.grid_shader.install()
+        glUniformMatrix4fv(self.grid_shader.uniform['view'], 1, GL_FALSE, self.view)
+        glUniformMatrix4fv(self.grid_shader.uniform['projection'], 1, GL_FALSE, self.projection)
 
-        self.grid1VBO.bind()
+        self.grid1_vbo.bind()
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid1VBO.data[0].nbytes, self.grid1VBO)
-        glUniform3f(self.gridShader.uniform['color'], .2, .2, 0)
-        glDrawArrays(GL_LINES, 0, len(self.grid1VBO))
-        self.grid1VBO.unbind()
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid1_vbo.data[0].nbytes, self.grid1_vbo)
+        glUniform3f(self.grid_shader.uniform['color'], .2, .2, 0)
+        glDrawArrays(GL_LINES, 0, len(self.grid1_vbo))
+        self.grid1_vbo.unbind()
 
-        self.grid2VBO.bind()
+        self.grid2_vbo.bind()
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid2VBO.data[0].nbytes, self.grid2VBO)
-        glUniform3f(self.gridShader.uniform['color'], .5, .5, .5)
-        glDrawArrays(GL_LINES, 0, len(self.grid2VBO))
-        self.grid2VBO.unbind()
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid2_vbo.data[0].nbytes, self.grid2_vbo)
+        glUniform3f(self.grid_shader.uniform['color'], .5, .5, .5)
+        glDrawArrays(GL_LINES, 0, len(self.grid2_vbo))
+        self.grid2_vbo.unbind()
 
         # linhas
-        self.lineShader.install()
-        glUniformMatrix4fv(self.lineShader.uniform['view'], 1, GL_FALSE, self.view)
-        glUniformMatrix4fv(self.lineShader.uniform['projection'], 1, GL_FALSE, self.projection)
+        self.line_shader.install()
+        glUniformMatrix4fv(self.line_shader.uniform['view'], 1, GL_FALSE, self.view)
+        glUniformMatrix4fv(self.line_shader.uniform['projection'], 1, GL_FALSE, self.projection)
 
         glBlendEquation(GL_MAX)
 
-        self.lineVBO.bind()
+        self.line_vbo.bind()
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, self.lineVBO.data[0].nbytes, self.lineVBO)
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo)
         glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, self.lineVBO.data[0].nbytes, self.lineVBO+4*4)
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo+4*4)
         glEnableVertexAttribArray(2)
-        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, self.lineVBO.data[0].nbytes, self.lineVBO+(4+4)*4)
-        glUniform1i(self.lineShader.uniform['resolution'], 12)
-        glDrawArrays(GL_POINTS, 0, len(self.lineData))
-        self.lineVBO.unbind()
+        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo+(4+4)*4)
+        glUniform1i(self.line_shader.uniform['resolution'], 12)
+        glDrawArrays(GL_POINTS, 0, len(self.line_data))
+        self.line_vbo.unbind()
 
         # vias
-        self.viaShader.install()
-        glUniformMatrix4fv(self.viaShader.uniform['view'], 1, GL_FALSE, self.view)
-        glUniformMatrix4fv(self.viaShader.uniform['projection'], 1, GL_FALSE, self.projection)
+        self.via_shader.install()
+        glUniformMatrix4fv(self.via_shader.uniform['view'], 1, GL_FALSE, self.view)
+        glUniformMatrix4fv(self.via_shader.uniform['projection'], 1, GL_FALSE, self.projection)
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glBlendEquation(GL_FUNC_ADD)
 
-        self.viaVBO.bind()
+        self.via_vbo.bind()
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, self.viaVBO.data[0].nbytes, self.viaVBO)
-        glDrawArrays(GL_POINTS, 0, len(self.viaData))
-        self.viaVBO.unbind()
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, self.via_vbo.data[0].nbytes, self.via_vbo)
+        glDrawArrays(GL_POINTS, 0, len(self.via_data))
+        self.via_vbo.unbind()
 
-        self.viaShader.uninstall()
+        self.via_shader.uninstall()
 
         # textos
 
@@ -178,10 +188,18 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             height (int): new widget height
         """
         glViewport(0, 0, width, height)
+        scale = 1/6e6 #self.projection[0, 0]
         self.projection = transf.ortho(-width/height, width/height, -1, 1, -1, 1)
-        transf.scale(self.projection, 1/6)
+        # print(self.projection[0,0])
+        # transf.scale(self.projection, scale)
+        # print(self.projection[0,0])
 
-
+# glMatrixMode(GL_PROJECTION);
+# glLoadIdentity();
+# if (w <= h)
+#     glOrtho(-4.0, 4.0, -3.0 * (GLfloat) h / (GLfloat) w, 5.0 * (GLfloat) h / (GLfloat) w, -10.0, 10.0);
+# else
+#     glOrtho(-4.0 * (GLfloat) w / (GLfloat) h, 4.0 * (GLfloat) w / (GLfloat) h, -3.0, 5.0, -10.0, 10.0);
 
 
 
@@ -215,6 +233,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
                 self.zoomIn()
             else:
                 self.zoomOut()
+            print(self.projection[0,0], self.view[0,0])
             event.accept()
         else:
             event.ignore()
@@ -270,7 +289,9 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         if self._pan_pos:
             p = event.pos()-self._pan_pos
             self._pan_pos = event.pos()
-            transf.translate(self.view, p.x()/36, -p.y()/36, 0)
+            s = self.view[0,0]
+            print(s, 1/s)
+            transf.translate(self.view, p.x()*s, -p.y()*s, 0)
             self.repaint()
             # self.viewRect.setLeft(min(self.viewSize.width()-self.viewRect.width(),
             #                           max(0, self.viewRect.left()-p.x()/self.scale)))
@@ -311,7 +332,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             pos (QPoint, optional): center of the zoom in screen coordinate. If `None` (default), the zoom center
                 will be at the widget center.
         """
-        transf.scale(self.projection, 1.25)
+        transf.scale(self.view, 1.25)
         self.repaint()
         pass
         # if self.scale < 1.6:
@@ -328,7 +349,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             pos (QPoint, optional): center of the zoom in screen coordinate. If `None` (default), the zoom
                 center will be the widget center.
         """
-        transf.scale(self.projection, 1/1.25)
+        transf.scale(self.view, 1/1.25)
         self.repaint()
         pass
         # if self.scale > .04:
