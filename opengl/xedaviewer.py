@@ -11,6 +11,33 @@ import math
 import random
 import bff
 
+def generateVia(data, x, y, o_d, i_d, degenerate=None):
+
+    o_r = o_d/2
+    i_r = i_d/2
+
+    res = 24
+
+    delta = 2*math.pi/res
+
+    for r in range(res+1):
+        ang = delta*r
+        c = math.cos(ang)
+        s = math.sin(ang)
+
+        p1 = [x+c*o_r, y+s*o_r]
+        p2 = [x+c*i_r, y+s*i_r]
+
+        if degenerate:
+            data.append(degenerate)
+            data.append(p1)
+            degenerate = None
+
+        data.append(p1)
+        data.append(p2)
+
+    return p2
+
 
 class XedaViewerBase(QtOpenGL.QGLWidget):
 
@@ -30,10 +57,12 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         #                       ], dtype='f')
 
         v = []
+        degenerate = None
         for x in range(-100, 100, 4):
             for y in range(-100, 100, 4):
-                v.append([x*2.54e5, y*2.54e5, .045*2.54e6, .028*2.54e6])
+                degenerate = generateVia(v, x*2.54e5, y*2.54e5, .045*2.54e6, .028*2.54e6, degenerate)
         self.via_data = np.array(v, dtype='f')
+        print(self.via_data.shape)
 
         l = []
         for x in range(-100, 100, 4):
@@ -172,8 +201,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
 
         self.via_vbo.bind()
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, self.via_vbo.data[0].nbytes, self.via_vbo)
-        glDrawArrays(GL_POINTS, 0, len(self.via_data))
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_vbo.data[0].nbytes, self.via_vbo)
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, len(self.via_data))
         self.via_vbo.unbind()
 
         self.via_shader.uninstall()
