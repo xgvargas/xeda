@@ -11,14 +11,16 @@ import math
 import random
 import bff
 
-def generateVia(data, x, y, o_d, i_d, degenerate=None):
+def generateVia(strip, triangle, x, y, o_d, i_d):
 
     o_r = o_d/2
     i_r = i_d/2
 
-    res = 24
+    res = 30
 
     delta = 2*math.pi/res
+
+    first = True
 
     for r in range(res+1):
         ang = delta*r
@@ -28,15 +30,73 @@ def generateVia(data, x, y, o_d, i_d, degenerate=None):
         p1 = [x+c*o_r, y+s*o_r]
         p2 = [x+c*i_r, y+s*i_r]
 
-        if degenerate:
-            data.append(degenerate)
-            data.append(p1)
-            degenerate = None
+        if first:
+            strip.append(p1)
+            first = False
+        else:
+            ang += delta
+            c = math.cos(ang)
+            s = math.sin(ang)
 
-        data.append(p1)
-        data.append(p2)
+            p2_1 = [x+c*i_r, y+s*i_r]
 
-    return p2
+            triangle.append((x, y))
+            triangle.append(p2)
+            triangle.append(p2_1)
+
+        strip.append(p1)
+        strip.append(p2)
+
+    strip.append(p2)
+
+
+def generateLines(fan, x1, y1, x2, y2, width, color):
+
+    a = math.atan2(y2-y1, x2-x1)
+
+    b = a+math.pi/2
+    c = b-math.pi
+
+    radius = width/2
+
+    pa = (math.cos(b)*radius, math.sin(b)*radius)
+    pb = (math.cos(c)*radius, math.sin(c)*radius)
+
+    p1 = (x1+pa[0], y1+pa[1])
+    p2 = (x1+pb[0], y1+pb[1])
+    p3 = (x2+pa[0], y2+pa[1])
+    p4 = (x2+pb[0], y2+pb[1])
+
+    fan.append(p1)
+    fan.append(p2)
+    fan.append(p3)
+
+    fan.append(p2)
+    fan.append(p4)
+    fan.append(p3)
+
+    res = 12
+
+    delta = math.pi/res
+
+    def cap(x, y, ang):
+
+
+        for i in range(res):
+
+            fan.append((x, y))
+
+            p = (x+math.cos(ang)*radius, y+math.sin(ang)*radius)
+            fan.append(p)
+
+            ang += delta
+            p = (x+math.cos(ang)*radius, y+math.sin(ang)*radius)
+
+            fan.append(p)
+
+    cap(x1, y1, b)
+    cap(x2, y2, c)
+
 
 
 class XedaViewerBase(QtOpenGL.QGLWidget):
@@ -56,19 +116,20 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         #                       [5.5*2.54e6, -5.5*2.54e6, -5.5*2.54e6, 0,   0., 0., 1., .6,   1*2.54e6],
         #                       ], dtype='f')
 
-        v = []
-        degenerate = None
-        for x in range(-100, 100, 4):
-            for y in range(-100, 100, 4):
-                degenerate = generateVia(v, x*2.54e5, y*2.54e5, .045*2.54e6, .028*2.54e6, degenerate)
-        self.via_data = np.array(v, dtype='f')
-        print(self.via_data.shape)
+        v, t = [], []
+        for x in range(-100, 100, 2):
+            for y in range(-100, 100, 2):
+                generateVia(v, t, x*2.54e5, y*2.54e5, .1*2.54e6, .05*2.54e6)
+        self.via_ring_data = np.array(v[1:-2], dtype='f')
+        self.via_center_data = np.array(t, dtype='f')
+        print(self.via_ring_data.shape, self.via_center_data.shape)
 
         l = []
-        for x in range(-100, 100, 4):
-            for y in range(-100, 100, 4):
-                l.append([x*2.54e5, y*2.54e5, x*2.54e5+.8*2.54e6, y*2.54e5+.8*2.54e6,    random.random(), random.random(), random.random(), .6,   .014*2.54e6])
+        for x in range(-100, 100, 5):
+            for y in range(-100, 100, 5):
+                generateLines(l, x*2.54e5, y*2.54e5, x*2.54e5+.8*2.54e6, y*2.54e5+.8*2.54e6, .014*2.54e6, (random.random(), random.random(), random.random()))
         self.line_data = np.array(l, dtype='f')
+        print(self.line_data.shape)
 
         self.grid1_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), .1*2.54e6, .1*2.54e6)
         self.grid2_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), 1*2.54e6, 1*2.54e6)
@@ -121,14 +182,15 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.grid1_vbo = glvbo.VBO(self.grid1_data)
         self.grid2_vbo = glvbo.VBO(self.grid2_data)
         self.line_vbo = glvbo.VBO(self.line_data)
-        self.via_vbo = glvbo.VBO(self.via_data)
+        self.via_ring_vbo = glvbo.VBO(self.via_ring_data)
+        self.via_center_vbo = glvbo.VBO(self.via_center_data)
 
         self.font = bff.BFF('arial14.bff')
 
         self.ready.emit()
 
         self._angle = [0]*10
-        self.startTimer(1000/80)
+        # self.startTimer(1000/80)
 
     def timerEvent(self, event):
         self._angle[0] += .04
@@ -144,9 +206,9 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.line_data[2][3] = 4*2.54e6*math.sin(self._angle[2])
         self.line_data[3][2] = 4*2.54e6*math.cos(self._angle[2])
         self.line_data[3][3] = 4*2.54e6*math.sin(self._angle[2])
-        # self.line_vbo = glvbo.VBO(self.line_data)
-        # self.line_vbo.copy_data()
-        self.line_vbo.set_array(self.line_data)
+        # self.line_strip_vbo = glvbo.VBO(self.line_data)
+        # self.line_strip_vbo.copy_data()
+        self.line_strip_vbo.set_array(self.line_data)
         self.repaint()
 
     def paintGL(self):
@@ -162,50 +224,44 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.grid1_vbo.bind()
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid1_vbo.data[0].nbytes, self.grid1_vbo)
-        glUniform3f(self.grid_shader.uniform['color'], .2, .2, 0)
+        glUniform4f(self.grid_shader.uniform['color'], .2, .2, 0, 1)
         glDrawArrays(GL_LINES, 0, len(self.grid1_vbo))
         self.grid1_vbo.unbind()
 
         self.grid2_vbo.bind()
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid2_vbo.data[0].nbytes, self.grid2_vbo)
-        glUniform3f(self.grid_shader.uniform['color'], .5, .5, .5)
+        glUniform4f(self.grid_shader.uniform['color'], .5, .5, .5, 1)
         glDrawArrays(GL_LINES, 0, len(self.grid2_vbo))
         self.grid2_vbo.unbind()
 
         # linhas
-        self.line_shader.install()
-        glUniformMatrix4fv(self.line_shader.uniform['view'], 1, GL_FALSE, self.view)
-        glUniformMatrix4fv(self.line_shader.uniform['projection'], 1, GL_FALSE, self.projection)
-
         glBlendEquation(GL_MAX)
 
         self.line_vbo.bind()
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo)
-        glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo+4*4)
-        glEnableVertexAttribArray(2)
-        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo+(4+4)*4)
-        glUniform1i(self.line_shader.uniform['resolution'], 12)
-        glDrawArrays(GL_POINTS, 0, len(self.line_data))
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo)
+        glUniform4f(self.grid_shader.uniform['color'], 1, 0, 0, .7)
+        glDrawArrays(GL_TRIANGLES, 0, len(self.line_data))
         self.line_vbo.unbind()
 
         # vias
-        self.via_shader.install()
-        glUniformMatrix4fv(self.via_shader.uniform['view'], 1, GL_FALSE, self.view)
-        glUniformMatrix4fv(self.via_shader.uniform['projection'], 1, GL_FALSE, self.projection)
-
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glBlendEquation(GL_FUNC_ADD)
 
-        self.via_vbo.bind()
+        self.via_ring_vbo.bind()
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_vbo.data[0].nbytes, self.via_vbo)
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, len(self.via_data))
-        self.via_vbo.unbind()
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_ring_vbo.data[0].nbytes, self.via_ring_vbo)
+        glUniform4f(self.grid_shader.uniform['color'], .5, .5, .5, .7)
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, len(self.via_ring_data))
+        self.via_ring_vbo.unbind()
 
-        self.via_shader.uninstall()
+        self.via_center_vbo.bind()
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_center_vbo.data[0].nbytes, self.via_center_vbo)
+        glUniform4f(self.grid_shader.uniform['color'], .7, .7, .7, .7)
+        glDrawArrays(GL_TRIANGLES, 0, len(self.via_center_data))
+        self.via_center_vbo.unbind()
 
         # textos
 
