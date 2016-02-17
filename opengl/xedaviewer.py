@@ -11,7 +11,7 @@ import math
 import random
 import bff
 
-def generateVia(strip, triangle, x, y, o_d, i_d):
+def generateVia(tri, x, y, o_d, i_d):
 
     o_r = o_d/2
     i_r = i_d/2
@@ -20,37 +20,29 @@ def generateVia(strip, triangle, x, y, o_d, i_d):
 
     delta = 2*math.pi/res
 
-    first = True
+    ang = 0
+    for i in range(res):
 
-    for r in range(res+1):
-        ang = delta*r
-        c = math.cos(ang)
-        s = math.sin(ang)
+        tri.append((x, y))
 
-        p1 = [x+c*o_r, y+s*o_r]
-        p2 = [x+c*i_r, y+s*i_r]
+        p = (x+math.cos(ang)*o_r, y+math.sin(ang)*o_r)
+        pi2 = (x+math.cos(ang)*i_r, y+math.sin(ang)*i_r)
+        tri.append(p)
 
-        if first:
-            strip.append(p1)
-            first = False
-        else:
-            ang += delta
-            c = math.cos(ang)
-            s = math.sin(ang)
+        ang += delta
+        p = (x+math.cos(ang)*o_r, y+math.sin(ang)*o_r)
+        pi3 = (x+math.cos(ang)*i_r, y+math.sin(ang)*i_r)
 
-            p2_1 = [x+c*i_r, y+s*i_r]
+        tri.append(p)
 
-            triangle.append((x, y))
-            triangle.append(p2)
-            triangle.append(p2_1)
+        #-----
 
-        strip.append(p1)
-        strip.append(p2)
-
-    strip.append(p2)
+        tri.append((x, y))
+        tri.append(pi2)
+        tri.append(pi3)
 
 
-def generateLines(fan, x1, y1, x2, y2, width, color):
+def generateLines(tri, x1, y1, x2, y2, width, color):
 
     a = math.atan2(y2-y1, x2-x1)
 
@@ -67,32 +59,30 @@ def generateLines(fan, x1, y1, x2, y2, width, color):
     p3 = (x2+pa[0], y2+pa[1])
     p4 = (x2+pb[0], y2+pb[1])
 
-    fan.append(p1)
-    fan.append(p2)
-    fan.append(p3)
+    tri.append(p1)
+    tri.append(p2)
+    tri.append(p3)
 
-    fan.append(p2)
-    fan.append(p4)
-    fan.append(p3)
+    tri.append(p2)
+    tri.append(p4)
+    tri.append(p3)
 
     res = 12
 
     delta = math.pi/res
 
     def cap(x, y, ang):
-
-
         for i in range(res):
 
-            fan.append((x, y))
+            tri.append((x, y))
 
             p = (x+math.cos(ang)*radius, y+math.sin(ang)*radius)
-            fan.append(p)
+            tri.append(p)
 
             ang += delta
             p = (x+math.cos(ang)*radius, y+math.sin(ang)*radius)
 
-            fan.append(p)
+            tri.append(p)
 
     cap(x1, y1, b)
     cap(x2, y2, c)
@@ -119,15 +109,15 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         v, t = [], []
         for x in range(-100, 100, 2):
             for y in range(-100, 100, 2):
-                generateVia(v, t, x*2.54e5, y*2.54e5, .1*2.54e6, .05*2.54e6)
-        self.via_ring_data = np.array(v[1:-2], dtype='f')
-        self.via_center_data = np.array(t, dtype='f')
-        print(self.via_ring_data.shape, self.via_center_data.shape)
+                generateVia(v, x*2.54e5, y*2.54e5, .1*2.54e6, .05*2.54e6)
+        self.via_ring_data = np.array(v, dtype='f')
+        # self.via_center_data = np.array(t, dtype='f')
+        print(self.via_ring_data.shape)#, self.via_center_data.shape)
 
         l = []
-        for x in range(-100, 100, 5):
-            for y in range(-100, 100, 5):
-                generateLines(l, x*2.54e5, y*2.54e5, x*2.54e5+.8*2.54e6, y*2.54e5+.8*2.54e6, .014*2.54e6, (random.random(), random.random(), random.random()))
+        for x in range(-100, 100, 4):
+            for y in range(-100, 100, 2):
+                generateLines(l, x*2.54e5, y*2.54e5, x*2.54e5+.25*2.54e6, y*2.54e5+.25*2.54e6, .014*2.54e6, (random.random(), random.random(), random.random()))
         self.line_data = np.array(l, dtype='f')
         print(self.line_data.shape)
 
@@ -183,7 +173,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.grid2_vbo = glvbo.VBO(self.grid2_data)
         self.line_vbo = glvbo.VBO(self.line_data)
         self.via_ring_vbo = glvbo.VBO(self.via_ring_data)
-        self.via_center_vbo = glvbo.VBO(self.via_center_data)
+        # self.via_center_vbo = glvbo.VBO(self.via_center_data)
 
         self.font = bff.BFF('arial14.bff')
 
@@ -252,16 +242,16 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.via_ring_vbo.bind()
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_ring_vbo.data[0].nbytes, self.via_ring_vbo)
-        glUniform4f(self.grid_shader.uniform['color'], .5, .5, .5, .7)
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, len(self.via_ring_data))
+        glUniform4f(self.grid_shader.uniform['color'], .5, .5, .5, .6)
+        glDrawArrays(GL_TRIANGLES, 0, len(self.via_ring_data))
         self.via_ring_vbo.unbind()
 
-        self.via_center_vbo.bind()
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_center_vbo.data[0].nbytes, self.via_center_vbo)
-        glUniform4f(self.grid_shader.uniform['color'], .7, .7, .7, .7)
-        glDrawArrays(GL_TRIANGLES, 0, len(self.via_center_data))
-        self.via_center_vbo.unbind()
+        # self.via_center_vbo.bind()
+        # glEnableVertexAttribArray(0)
+        # glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_center_vbo.data[0].nbytes, self.via_center_vbo)
+        # glUniform4f(self.grid_shader.uniform['color'], .7, .7, .7, .7)
+        # glDrawArrays(GL_TRIANGLES, 0, len(self.via_center_data))
+        # self.via_center_vbo.unbind()
 
         # textos
 
