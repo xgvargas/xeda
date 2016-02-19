@@ -10,54 +10,77 @@ import shader
 import math
 import random
 import bff
+import layer
+
+
+def generateVia(tri, x, y, o_d, i_d):
+
+    o_r = o_d/2
+    i_r = i_d/2
+
+    res = 30
+
+    delta = 2*math.pi/res
+
+    ang = 0
+    for i in range(res):
+
+        tri.append((x, y))
+
+        p = (x+math.cos(ang)*o_r, y+math.sin(ang)*o_r)
+        pi2 = (x+math.cos(ang)*i_r, y+math.sin(ang)*i_r)
+        tri.append(p)
+
+        ang += delta
+        p = (x+math.cos(ang)*o_r, y+math.sin(ang)*o_r)
+        pi3 = (x+math.cos(ang)*i_r, y+math.sin(ang)*i_r)
+
+        tri.append(p)
+
+        #-----
+
+        tri.append((x, y))
+        tri.append(pi2)
+        tri.append(pi3)
 
 
 class XedaViewerBase(QtOpenGL.QGLWidget):
 
     ready = QtCore.Signal()
+    cursor_event = QtCore.Signal(float, float)
+    snap_event = QtCore.Signal(QtCore.QPoint)
 
     def __init__(self, parent=None):
         super().__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
 
-        self.lastPos = QtCore.QPoint()
+        self.setCursor(QtCore.Qt.BlankCursor)
+        # self.unsetCursor()  #para mostrar o cursor denovo...
+        # self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setMouseTracking(True)
 
-        # self.line_data = np.array([
-        #                       [0, 0, -5.5*2.54e6, 0,   0., 0., 1., .6,   1*2.54e6],
-        #                       [0, 0, 0, 5.5*2.54e6,   1., 0., 0., .6,   .5*2.54e6],
-        #                       [0, 0, 0, -5.5*2.54e6,   1., 1., 0, .6,   .6*2.54e6],
-        #                       [-5, 0, 0, -5.5*2.54e6,   1., 1., 0, .6,   .6*2.54e6],
-        #                       [5.5*2.54e6, -5.5*2.54e6, -5.5*2.54e6, 0,   0., 0., 1., .6,   1*2.54e6],
-        #                       ], dtype='f')
+        self._pan_pos = None
+        self._cursor_pos = QtCore.QPoint()
 
         v = []
-        for x in range(-100, 100, 4):
-            for y in range(-100, 100, 4):
-                v.append([x*2.54e5, y*2.54e5, .045*2.54e6, .028*2.54e6])
+        for x in range(-100, 100, 2):
+            for y in range(-100, 100, 2):
+                generateVia(v, x*25.4e5, y*25.4e5, .1*25.4e6, .05*25.4e6)
         self.via_data = np.array(v, dtype='f')
 
-        l = []
-        for x in range(-100, 100, 4):
-            for y in range(-100, 100, 4):
-                l.append([x*2.54e5, y*2.54e5, x*2.54e5+.8*2.54e6, y*2.54e5+.8*2.54e6,    random.random(), random.random(), random.random(), .6,   .014*2.54e6])
-        self.line_data = np.array(l, dtype='f')
-
-        self.grid1_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), .1*2.54e6, .1*2.54e6)
-        self.grid2_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), 1*2.54e6, 1*2.54e6)
-
         self.view = np.identity(4, dtype='f')
-        transf.scale(self.view, 1e-7)
+        transf.scale(self.view, 1e-8)
         self.projection = np.identity(4, dtype='f')
 
-    def _generateGrid(self, w, h, dx, dy):
+    def _generateGrid(self, w, h, dx, dy, color):
         g = []
-        for x in range(int(w[0]), int(w[1]), int(dx)):
-            g.append([x, h[0]])
-            g.append([x, h[1]])
-        for y in range(int(h[0]), int(h[1]), int(dy)):
-            g.append([w[0], y])
-            g.append([w[1], y])
+        for x in range(int(w[0]), int(w[1]+1), int(dx)):
+            g.append( (x, h[0], 3) )
+            g.append( (x, h[1], 1) )
+        for y in range(int(h[0]), int(h[1]+1), int(dy)):
+            g.append( (w[0], y, 2) )
+            g.append( (w[1], y, 1) )
 
-        return np.array(g, dtype='f')
+        return np.array(g, dtype='f4, f4, i4')
 
     def minimumSizeHint(self):
         """Hint of the minimum size this widget accepts.
@@ -85,100 +108,82 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         # glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
         # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
-        self.grid_shader = shader.ShaderProgram(codefile='shader/grid.glsl', link=True)
-        self.line_shader = shader.ShaderProgram(codefile='shader/line.glsl', link=True)
-        self.via_shader = shader.ShaderProgram(codefile='shader/via.glsl', link=True)
+        self.main_shader = shader.ShaderProgram(codefile='shaders/main.glsl', link=True)
 
-        self.grid1_vbo = glvbo.VBO(self.grid1_data)
-        self.grid2_vbo = glvbo.VBO(self.grid2_data)
-        self.line_vbo = glvbo.VBO(self.line_data)
+
+        self.top_layer = layer.Line(self, 1)
+        for i in range(20):
+            a = math.radians(i*360/20)
+            self.top_layer.add(0, 0, 20*25.4e6*math.cos(a), 20*25.4e6*math.sin(a), .1*25.4e6, 'bunda')
+
+        # self.bottom_layer = layer.Line(self, 2)
+        # for x in range(-100, 100, 10):
+        #     for y in range(-100, 100, 5):
+        #         self.bottom_layer.add(x*25.4e5, y*25.4e5, x*25.4e5+.25*25.4e6, y*25.4e5+.25*25.4e6, .014*25.4e6, 'meleca')
+
+        print(self.top_layer._vbo.data)
+
+        g1 = self._generateGrid((-10*25.4e6, 10*25.4e6), (-10*25.4e6, 10*25.4e6), .1*25.4e6, .1*25.4e6, 1)
+        g2 = self._generateGrid((-10*25.4e6, 10*25.4e6), (-10*25.4e6, 10*25.4e6), 1*25.4e6, 1*25.4e6, 2)
+
+        # self.grid_vbo = glvbo.VBO(np.append(g1, g2))
+        self.grid_vbo = glvbo.VBO(g2)
+
         self.via_vbo = glvbo.VBO(self.via_data)
 
         self.font = bff.BFF('arial14.bff')
 
         self.ready.emit()
 
-        self._angle = [0]*10
-        self.startTimer(1000/80)
-
-    def timerEvent(self, event):
-        self._angle[0] += .04
-        self.line_data[0][2] = 5.5*2.54e6*math.cos(self._angle[0])
-        self.line_data[0][3] = 5.5*2.54e6*math.sin(self._angle[0])
-        self.line_data[4][2] = 5.5*2.54e6*math.cos(self._angle[0])
-        self.line_data[4][3] = 5.5*2.54e6*math.sin(self._angle[0])
-        self._angle[1] += .1
-        self.line_data[1][2] = 5*2.54e6*math.cos(self._angle[1])
-        self.line_data[1][3] = 5*2.54e6*math.sin(self._angle[1])
-        self._angle[2] += -.09
-        self.line_data[2][2] = 4*2.54e6*math.cos(self._angle[2])
-        self.line_data[2][3] = 4*2.54e6*math.sin(self._angle[2])
-        self.line_data[3][2] = 4*2.54e6*math.cos(self._angle[2])
-        self.line_data[3][3] = 4*2.54e6*math.sin(self._angle[2])
-        # self.line_vbo = glvbo.VBO(self.line_data)
-        # self.line_vbo.copy_data()
-        self.line_vbo.set_array(self.line_data)
-        self.repaint()
-
     def paintGL(self):
         """Event to repaint the scene.
         """
         glClear(GL_COLOR_BUFFER_BIT)
 
-        #grid
-        self.grid_shader.install()
-        glUniformMatrix4fv(self.grid_shader.uniform['view'], 1, GL_FALSE, self.view)
-        glUniformMatrix4fv(self.grid_shader.uniform['projection'], 1, GL_FALSE, self.projection)
+        pallete = np.array([(1,.5,0,1), (0,1,0,1), (0,0,1,1), (1,1,0,1),
+                            (1,0,1,1), (1,0,1,1), (1,0,1,1), (1,0,1,1)], dtype='f')
 
-        self.grid1_vbo.bind()
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid1_vbo.data[0].nbytes, self.grid1_vbo)
-        glUniform3f(self.grid_shader.uniform['color'], .2, .2, 0)
-        glDrawArrays(GL_LINES, 0, len(self.grid1_vbo))
-        self.grid1_vbo.unbind()
+        with self.main_shader:
+            glUniformMatrix4fv(self.main_shader.uniform['view'], 1, GL_FALSE, self.view)
+            glUniformMatrix4fv(self.main_shader.uniform['projection'], 1, GL_FALSE, self.projection)
+            glUniform1fv(self.main_shader.uniform['palette'], 36, pallete)
 
-        self.grid2_vbo.bind()
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid2_vbo.data[0].nbytes, self.grid2_vbo)
-        glUniform3f(self.grid_shader.uniform['color'], .5, .5, .5)
-        glDrawArrays(GL_LINES, 0, len(self.grid2_vbo))
-        self.grid2_vbo.unbind()
+            #grid
+            with self.grid_vbo:
+                glEnableVertexAttribArray(0)
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, self.grid_vbo)
+                glEnableVertexAttribArray(1)
+                glVertexAttribPointer(1, 1, GL_BYTE, GL_FALSE, 12, self.grid_vbo+8)
+                glDrawArrays(GL_LINES, 0, len(self.grid_vbo))
 
-        # linhas
-        self.line_shader.install()
-        glUniformMatrix4fv(self.line_shader.uniform['view'], 1, GL_FALSE, self.view)
-        glUniformMatrix4fv(self.line_shader.uniform['projection'], 1, GL_FALSE, self.projection)
+            # linhas
+            # glBlendEquation(GL_MAX)
 
-        glBlendEquation(GL_MAX)
+            # self.top_layer.drawItems()
+            # self.bottom_layer.drawItems()
 
-        self.line_vbo.bind()
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo)
-        glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo+4*4)
-        glEnableVertexAttribArray(2)
-        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo+(4+4)*4)
-        glUniform1i(self.line_shader.uniform['resolution'], 12)
-        glDrawArrays(GL_POINTS, 0, len(self.line_data))
-        self.line_vbo.unbind()
+            # # vias
+            # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            # glBlendEquation(GL_FUNC_ADD)
 
-        # vias
-        self.via_shader.install()
-        glUniformMatrix4fv(self.via_shader.uniform['view'], 1, GL_FALSE, self.view)
-        glUniformMatrix4fv(self.via_shader.uniform['projection'], 1, GL_FALSE, self.projection)
+            # with self.via_vbo:
+            #     glEnableVertexAttribArray(0)
+            #     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_vbo.data[0].nbytes, self.via_vbo)
+            #     # glUniform4f(self.main_shader.uniform['color'], .5, .5, .5, .6)
+            #     glDrawArrays(GL_TRIANGLES, 0, len(self.via_data))
 
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glBlendEquation(GL_FUNC_ADD)
+            # textos
 
-        self.via_vbo.bind()
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, self.via_vbo.data[0].nbytes, self.via_vbo)
-        glDrawArrays(GL_POINTS, 0, len(self.via_data))
-        self.via_vbo.unbind()
-
-        self.via_shader.uninstall()
-
-        # textos
+            #cursor
+            c = np.array([(-1e9, self._cursor_pos.y(), 0), (1e9, self._cursor_pos.y(), 0),
+                         (self._cursor_pos.x(), 1e9, 0), (self._cursor_pos.x(), -1e9, 0)], dtype='f4, f4, i4')
+            vbo = glvbo.VBO(c)
+            with vbo:
+                glEnableVertexAttribArray(0)
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, vbo)
+                glEnableVertexAttribArray(1)
+                glVertexAttribPointer(1, 1, GL_INT, GL_FALSE, 12, vbo+8)
+                glDrawArrays(GL_LINES, 0, 4)
 
     def resizeGL(self, width, height):
         """Event to adjust viewport and projection when widget is resized.
@@ -188,7 +193,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             height (int): new widget height
         """
         glViewport(0, 0, width, height)
-        scale = 1/6e6 #self.projection[0, 0]
+        self.window = QtCore.QSize(width, height)
+        # scale = 1/6e6 #self.projection[0, 0]
         self.projection = transf.ortho(-width/height, width/height, -1, 1, -1, 1)
         # print(self.projection[0,0])
         # transf.scale(self.projection, scale)
@@ -278,6 +284,24 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             event.ignore()
 
     def mouseMoveEvent(self, event):
+
+        x = 2*event.x()/self.window.width()-1
+        y = -2*event.y()/self.window.height()+1
+
+        x /= self.view[0, 0]*self.projection[0, 0]
+        y /= self.view[0, 0]
+
+        self.cursor_event.emit(x, y)
+
+        snap = .025*25.4e6
+
+        self._cursor_pos = QtCore.QPoint((x//snap)*snap, (y//snap)*snap)
+
+        self.snap_event.emit(self._cursor_pos)
+
+        self.repaint()
+
+
         # super().mouseMoveEvent(event)
         # self._mouse_pos = self.mapToScene(event.pos())
         # n = self.scene.proj.snap

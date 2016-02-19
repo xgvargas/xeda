@@ -75,7 +75,7 @@ class ShaderProgram(object):
         return shader
 
     def _uniformFinder(self, code):
-        for u in re.finditer(r'uniform\s+[^;]{2,}\s+(\w+);', code):
+        for u in re.finditer(r'uniform\s+[^;]{2,}\s+(\w+)[\[;]', code):
             self.uniform[u.group(1)] = None
 
     def addVertexShader(self, code):
@@ -193,8 +193,14 @@ class ShaderProgram(object):
         """
         glUseProgram(self.program)
 
-    def uninstall(self):
+    @staticmethod
+    def uninstall():
         """Remove this program from OpenGL.
         """
         glUseProgram(0)
 
+    __enter__ = install
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        ShaderProgram.uninstall()
+        return False

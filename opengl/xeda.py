@@ -30,6 +30,11 @@ class PCB(QtGui.QWidget, Ui_Form, smartsignal.SmartSignal):
 
         self.setWindowTitle('PCB v_'+__version__)
 
+    def _on_ogl_view__cursor_event(self, x, y):
+        self.label_1.setText('{:.3f}/{:.3f}'.format(x/25.4e6, y/25.4e6))
+
+    def _on_ogl_view__snap_event(self, p):
+        self.label_2.setText('{:.3f}/{:.3f}'.format(p.x()/25.4e6, p.y()/25.4e6))
 
 if __name__ == "__main__":
 
