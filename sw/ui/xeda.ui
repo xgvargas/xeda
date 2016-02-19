@@ -62,6 +62,7 @@
       <string>&amp;New...</string>
      </property>
      <addaction name="action_Project"/>
+     <addaction name="separator"/>
      <addaction name="action_Schematic"/>
      <addaction name="action_board"/>
      <addaction name="action_TODO_list"/>
