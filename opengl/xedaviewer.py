@@ -170,13 +170,17 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         # glEnable(GL_POLYGON_SMOOTH)
         # glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
         # glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
-        self.main_shader = shader.ShaderProgram(codefile='shader/main.glsl', link=True)
+        self.main_shader = shader.ShaderProgram(codefile='shaders/main.glsl', link=True)
 
         self.top_layer = layer.Line(self, (0,0,1,1))
-        self.top_layer.add(0, 0, 20*2.54e6, 0, .01*2.54e6, 'bunda')
-        # self.top_layer.add(-10*2.54e6, -10*2.54e6, 20*2.54e6, 15*2.54e6, .01*2.54e6, 'bunda')
+
+        for i in range(20):
+            a = math.radians(i*360/20)
+
+            self.top_layer.add(0, 0, 20*2.54e6*math.cos(a), 20*2.54e6*math.sin(a), .1*2.54e6, 'bunda')
+
 
         self.grid1_vbo = glvbo.VBO(self.grid1_data)
         self.grid2_vbo = glvbo.VBO(self.grid2_data)
@@ -187,38 +191,16 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
 
         self.ready.emit()
 
-        self._angle = [0]*10
-        # self.startTimer(1000/80)
-
-    def timerEvent(self, event):
-        self._angle[0] += .04
-        self.line_data[0][2] = 5.5*2.54e6*math.cos(self._angle[0])
-        self.line_data[0][3] = 5.5*2.54e6*math.sin(self._angle[0])
-        self.line_data[4][2] = 5.5*2.54e6*math.cos(self._angle[0])
-        self.line_data[4][3] = 5.5*2.54e6*math.sin(self._angle[0])
-        self._angle[1] += .1
-        self.line_data[1][2] = 5*2.54e6*math.cos(self._angle[1])
-        self.line_data[1][3] = 5*2.54e6*math.sin(self._angle[1])
-        self._angle[2] += -.09
-        self.line_data[2][2] = 4*2.54e6*math.cos(self._angle[2])
-        self.line_data[2][3] = 4*2.54e6*math.sin(self._angle[2])
-        self.line_data[3][2] = 4*2.54e6*math.cos(self._angle[2])
-        self.line_data[3][3] = 4*2.54e6*math.sin(self._angle[2])
-        # self.line_strip_vbo = glvbo.VBO(self.line_data)
-        # self.line_strip_vbo.copy_data()
-        self.line_strip_vbo.set_array(self.line_data)
-        self.repaint()
-
     def paintGL(self):
         """Event to repaint the scene.
         """
         glClear(GL_COLOR_BUFFER_BIT)
 
-        #grid
         with self.main_shader:
             glUniformMatrix4fv(self.main_shader.uniform['view'], 1, GL_FALSE, self.view)
             glUniformMatrix4fv(self.main_shader.uniform['projection'], 1, GL_FALSE, self.projection)
 
+            #grid
             with self.grid1_vbo:
                 glEnableVertexAttribArray(0)
                 glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid1_vbo.data[0].nbytes, self.grid1_vbo)
@@ -239,17 +221,6 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
                 glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo)
                 glUniform4f(self.main_shader.uniform['color'], 1, 0, 0, .7)
                 glDrawArrays(GL_TRIANGLES, 0, len(self.line_data))
-
-            print('-->', len(self.line_data), self.line_data.size)
-            print('flags', self.line_data.flags)
-            print('shape', self.line_data.shape)
-            print('strides', self.line_data.strides)
-            print('ndim', self.line_data.ndim)
-            print('data', self.line_data.data)
-            print('size', self.line_data.size)
-            print('itemsize', self.line_data.itemsize)
-            print('nbytes', self.line_data.nbytes)
-            print('base', self.line_data.base)
 
             glUniform4f(self.main_shader.uniform['color'], *self.top_layer.color)
             self.top_layer.drawLayer()

@@ -23,22 +23,9 @@ class LayerBase(object):
     def drawLayer(self):
         with self._vbo:
             glEnableVertexAttribArray(0)
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self._vbo.data[0].nbytes, self._vbo)
-            # glDrawArrays(GL_TRIANGLES, 0, self.triangles.size//2)
-            glDrawArrays(GL_TRIANGLES, 0, self._vbo.data[0].size//2)
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*4, self._vbo)
+            glDrawArrays(GL_TRIANGLES, 0, self._vbo.data.size//2)
 
-        print(dir(self._vbo.data[0]))
-
-        # print('-->', len(self.line_data), self.line_data.size)
-        print('flags', self._vbo.data[0].flags)
-        print('shape', self._vbo.data[0].shape)
-        print('strides', self._vbo.data[0].strides)
-        print('ndim', self._vbo.data[0].ndim)
-        print('data', self._vbo.data[0].data)
-        print('size', self._vbo.data[0].size)
-        print('itemsize', self._vbo.data[0].itemsize)
-        print('nbytes', self._vbo.data[0].nbytes)
-        print('base', self._vbo.data[0].base)
 
 class Line(LayerBase):
 
@@ -93,8 +80,8 @@ class Line(LayerBase):
                 p = (x+math.cos(ang)*radius, y+math.sin(ang)*radius)
                 tri.append(p)
 
-        # cap(l['x1'], l['y1'], b)
-        # cap(l['x2'], l['y2'], c)
+        cap(l['x1'], l['y1'], b)
+        cap(l['x2'], l['y2'], c)
 
         return np.array(tri, dtype='f')
 
@@ -102,12 +89,8 @@ class Line(LayerBase):
         idx = len(self.items)
         self.items = np.append(self.items, np.array(obj, dtype=Line.dtype))
         tri = self.openglfy(idx)
-        print(tri)
         self.triangles = np.append(self.triangles, tri)
-        print(self.triangles, self.triangles.size)
         self._vbo.set_array(self.triangles)
-        # self._vbo.create_buffers()
-        # self._vbo.copy_data()
         return idx
 
     def delete(self, idx):
