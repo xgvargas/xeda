@@ -193,8 +193,13 @@ class ShaderProgram(object):
         """
         glUseProgram(self.program)
 
-    def uninstall(self):
+    @staticmethod
+    def uninstall():
         """Remove this program from OpenGL.
         """
         glUseProgram(0)
 
+    __enter__ = install
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        ShaderProgram.uninstall()
+        return False

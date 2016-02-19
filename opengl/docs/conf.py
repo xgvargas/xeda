@@ -7,7 +7,7 @@
 
 import sys
 import os
-
+from recommonmark.parser import CommonMarkParser
 sys.path.insert(0, os.path.abspath('..'))
 
 
@@ -32,7 +32,8 @@ extensions = [
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', '*_ui.rst']
-source_suffix = '.rst'
+# source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 
@@ -45,6 +46,7 @@ show_authors = False
 todo_include_todos = True
 pygments_style = 'sphinx'
 #modindex_common_prefix = []
+source_parsers = {'.md': CommonMarkParser}
 
 
 # HTML

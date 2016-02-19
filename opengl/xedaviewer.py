@@ -10,6 +10,8 @@ import shader
 import math
 import random
 import bff
+import layer
+
 
 def generateVia(tri, x, y, o_d, i_d):
 
@@ -96,6 +98,11 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         super().__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
 
+        # self.setCursor(QtCore.Qt.BlankCursor)
+        # self.unsetCursor()  #para mostrar o cursor denovo...
+        # self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        # self.setMouseTracking(True)
+
         self.lastPos = QtCore.QPoint()
 
         # self.line_data = np.array([
@@ -106,13 +113,12 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         #                       [5.5*2.54e6, -5.5*2.54e6, -5.5*2.54e6, 0,   0., 0., 1., .6,   1*2.54e6],
         #                       ], dtype='f')
 
-        v, t = [], []
+        v = []
         for x in range(-100, 100, 2):
             for y in range(-100, 100, 2):
                 generateVia(v, x*2.54e5, y*2.54e5, .1*2.54e6, .05*2.54e6)
-        self.via_ring_data = np.array(v, dtype='f')
-        # self.via_center_data = np.array(t, dtype='f')
-        print(self.via_ring_data.shape)#, self.via_center_data.shape)
+        self.via_data = np.array(v, dtype='f')
+        print(self.via_data.shape)#, self.via_center_data.shape)
 
         l = []
         for x in range(-100, 100, 4):
@@ -120,6 +126,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
                 generateLines(l, x*2.54e5, y*2.54e5, x*2.54e5+.25*2.54e6, y*2.54e5+.25*2.54e6, .014*2.54e6, (random.random(), random.random(), random.random()))
         self.line_data = np.array(l, dtype='f')
         print(self.line_data.shape)
+
 
         self.grid1_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), .1*2.54e6, .1*2.54e6)
         self.grid2_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), 1*2.54e6, 1*2.54e6)
@@ -163,17 +170,18 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         # glEnable(GL_POLYGON_SMOOTH)
         # glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
         # glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
-        # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
-        self.grid_shader = shader.ShaderProgram(codefile='shader/grid.glsl', link=True)
-        self.line_shader = shader.ShaderProgram(codefile='shader/line.glsl', link=True)
-        self.via_shader = shader.ShaderProgram(codefile='shader/via.glsl', link=True)
+        self.main_shader = shader.ShaderProgram(codefile='shader/main.glsl', link=True)
+
+        self.top_layer = layer.Line(self, (0,0,1,1))
+        self.top_layer.add(0, 0, 20*2.54e6, 0, .01*2.54e6, 'bunda')
+        # self.top_layer.add(-10*2.54e6, -10*2.54e6, 20*2.54e6, 15*2.54e6, .01*2.54e6, 'bunda')
 
         self.grid1_vbo = glvbo.VBO(self.grid1_data)
         self.grid2_vbo = glvbo.VBO(self.grid2_data)
         self.line_vbo = glvbo.VBO(self.line_data)
-        self.via_ring_vbo = glvbo.VBO(self.via_ring_data)
-        # self.via_center_vbo = glvbo.VBO(self.via_center_data)
+        self.via_vbo = glvbo.VBO(self.via_data)
 
         self.font = bff.BFF('arial14.bff')
 
@@ -207,53 +215,56 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         glClear(GL_COLOR_BUFFER_BIT)
 
         #grid
-        self.grid_shader.install()
-        glUniformMatrix4fv(self.grid_shader.uniform['view'], 1, GL_FALSE, self.view)
-        glUniformMatrix4fv(self.grid_shader.uniform['projection'], 1, GL_FALSE, self.projection)
+        with self.main_shader:
+            glUniformMatrix4fv(self.main_shader.uniform['view'], 1, GL_FALSE, self.view)
+            glUniformMatrix4fv(self.main_shader.uniform['projection'], 1, GL_FALSE, self.projection)
 
-        self.grid1_vbo.bind()
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid1_vbo.data[0].nbytes, self.grid1_vbo)
-        glUniform4f(self.grid_shader.uniform['color'], .2, .2, 0, 1)
-        glDrawArrays(GL_LINES, 0, len(self.grid1_vbo))
-        self.grid1_vbo.unbind()
+            with self.grid1_vbo:
+                glEnableVertexAttribArray(0)
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid1_vbo.data[0].nbytes, self.grid1_vbo)
+                glUniform4f(self.main_shader.uniform['color'], .2, .2, 0, 1)
+                glDrawArrays(GL_LINES, 0, len(self.grid1_vbo))
 
-        self.grid2_vbo.bind()
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid2_vbo.data[0].nbytes, self.grid2_vbo)
-        glUniform4f(self.grid_shader.uniform['color'], .5, .5, .5, 1)
-        glDrawArrays(GL_LINES, 0, len(self.grid2_vbo))
-        self.grid2_vbo.unbind()
+            with self.grid2_vbo:
+                glEnableVertexAttribArray(0)
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid2_vbo.data[0].nbytes, self.grid2_vbo)
+                glUniform4f(self.main_shader.uniform['color'], .5, .5, .5, 1)
+                glDrawArrays(GL_LINES, 0, len(self.grid2_vbo))
 
-        # linhas
-        glBlendEquation(GL_MAX)
+            # linhas
+            glBlendEquation(GL_MAX)
 
-        self.line_vbo.bind()
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo)
-        glUniform4f(self.grid_shader.uniform['color'], 1, 0, 0, .7)
-        glDrawArrays(GL_TRIANGLES, 0, len(self.line_data))
-        self.line_vbo.unbind()
+            with self.line_vbo:
+                glEnableVertexAttribArray(0)
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo)
+                glUniform4f(self.main_shader.uniform['color'], 1, 0, 0, .7)
+                glDrawArrays(GL_TRIANGLES, 0, len(self.line_data))
 
-        # vias
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glBlendEquation(GL_FUNC_ADD)
+            print('-->', len(self.line_data), self.line_data.size)
+            print('flags', self.line_data.flags)
+            print('shape', self.line_data.shape)
+            print('strides', self.line_data.strides)
+            print('ndim', self.line_data.ndim)
+            print('data', self.line_data.data)
+            print('size', self.line_data.size)
+            print('itemsize', self.line_data.itemsize)
+            print('nbytes', self.line_data.nbytes)
+            print('base', self.line_data.base)
 
-        self.via_ring_vbo.bind()
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_ring_vbo.data[0].nbytes, self.via_ring_vbo)
-        glUniform4f(self.grid_shader.uniform['color'], .5, .5, .5, .6)
-        glDrawArrays(GL_TRIANGLES, 0, len(self.via_ring_data))
-        self.via_ring_vbo.unbind()
+            glUniform4f(self.main_shader.uniform['color'], *self.top_layer.color)
+            self.top_layer.drawLayer()
 
-        # self.via_center_vbo.bind()
-        # glEnableVertexAttribArray(0)
-        # glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_center_vbo.data[0].nbytes, self.via_center_vbo)
-        # glUniform4f(self.grid_shader.uniform['color'], .7, .7, .7, .7)
-        # glDrawArrays(GL_TRIANGLES, 0, len(self.via_center_data))
-        # self.via_center_vbo.unbind()
+            # vias
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glBlendEquation(GL_FUNC_ADD)
 
-        # textos
+            with self.via_vbo:
+                glEnableVertexAttribArray(0)
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_vbo.data[0].nbytes, self.via_vbo)
+                glUniform4f(self.main_shader.uniform['color'], .5, .5, .5, .6)
+                glDrawArrays(GL_TRIANGLES, 0, len(self.via_data))
+
+            # textos
 
     def resizeGL(self, width, height):
         """Event to adjust viewport and projection when widget is resized.
