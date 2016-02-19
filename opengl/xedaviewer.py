@@ -47,13 +47,12 @@ def generateVia(tri, x, y, o_d, i_d):
 class XedaViewerBase(QtOpenGL.QGLWidget):
 
     ready = QtCore.Signal()
-    cursor_event = QtCore.Signal(float, float)
-    snap_event = QtCore.Signal(QtCore.QPoint)
+    cursor_event = QtCore.Signal(QtCore.QPoint)
 
     def __init__(self, parent=None):
         super().__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
 
-        # self.setCursor(QtCore.Qt.BlankCursor)
+        self.setCursor(QtCore.Qt.BlankCursor)
         # self.unsetCursor()  #para mostrar o cursor denovo...
         # self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.setMouseTracking(True)
@@ -292,13 +291,11 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         x /= self.view[0, 0]*self.projection[0, 0]
         y /= self.view[0, 0]
 
-        self.cursor_event.emit(x, y)
-
         snap = .025*25.4e6
 
         self._cursor_pos = QtCore.QPoint((x//snap)*snap, (y//snap)*snap)
 
-        self.snap_event.emit(self._cursor_pos)
+        self.cursor_event.emit(self._cursor_pos)
 
         self.repaint()
 
