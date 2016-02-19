@@ -53,7 +53,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         super().__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
 
-        self.setCursor(QtCore.Qt.BlankCursor)
+        # self.setCursor(QtCore.Qt.BlankCursor)
         # self.unsetCursor()  #para mostrar o cursor denovo...
         # self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.setMouseTracking(True)
@@ -74,11 +74,11 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
     def _generateGrid(self, w, h, dx, dy, color):
         g = []
         for x in range(int(w[0]), int(w[1]+1), int(dx)):
-            g.append( (x, h[0], 3) )
-            g.append( (x, h[1], 1) )
+            g.append( (x, h[0], color) )
+            g.append( (x, h[1], color) )
         for y in range(int(h[0]), int(h[1]+1), int(dy)):
-            g.append( (w[0], y, 2) )
-            g.append( (w[1], y, 1) )
+            g.append( (w[0], y, color) )
+            g.append( (w[1], y, color) )
 
         return np.array(g, dtype='f4, f4, i4')
 
@@ -111,23 +111,23 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.main_shader = shader.ShaderProgram(codefile='shaders/main.glsl', link=True)
 
 
-        self.top_layer = layer.Line(self, 1)
+        self.top_layer = layer.Line(self, 4)
         for i in range(20):
             a = math.radians(i*360/20)
             self.top_layer.add(0, 0, 20*25.4e6*math.cos(a), 20*25.4e6*math.sin(a), .1*25.4e6, 'bunda')
 
-        # self.bottom_layer = layer.Line(self, 2)
-        # for x in range(-100, 100, 10):
-        #     for y in range(-100, 100, 5):
-        #         self.bottom_layer.add(x*25.4e5, y*25.4e5, x*25.4e5+.25*25.4e6, y*25.4e5+.25*25.4e6, .014*25.4e6, 'meleca')
+        self.bottom_layer = layer.Line(self, 5)
+        for x in range(-100, 100, 10):
+            for y in range(-100, 100, 5):
+                self.bottom_layer.add(x*25.4e5, y*25.4e5, x*25.4e5+.25*25.4e6, y*25.4e5+.25*25.4e6, .014*25.4e6, 'meleca')
 
         print(self.top_layer._vbo.data)
 
         g1 = self._generateGrid((-10*25.4e6, 10*25.4e6), (-10*25.4e6, 10*25.4e6), .1*25.4e6, .1*25.4e6, 1)
         g2 = self._generateGrid((-10*25.4e6, 10*25.4e6), (-10*25.4e6, 10*25.4e6), 1*25.4e6, 1*25.4e6, 2)
 
-        # self.grid_vbo = glvbo.VBO(np.append(g1, g2))
-        self.grid_vbo = glvbo.VBO(g2)
+        self.grid_vbo = glvbo.VBO(np.append(g1, g2))
+        # self.grid_vbo = glvbo.VBO(g2)
 
         self.via_vbo = glvbo.VBO(self.via_data)
 
@@ -140,27 +140,27 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         """
         glClear(GL_COLOR_BUFFER_BIT)
 
-        pallete = np.array([(1,.5,0,1), (0,1,0,1), (0,0,1,1), (1,1,0,1),
-                            (1,0,1,1), (1,0,1,1), (1,0,1,1), (1,0,1,1)], dtype='f')
+        pallete = np.array([(1,1,1,1), (.4,.4,.1,1), (.6,.6,.6,1), (1,1,1,1),
+                            (1,0,0,1), (0,0,1,1), (1,0,1,1), (1,0,1,1)], dtype='f')
 
         with self.main_shader:
             glUniformMatrix4fv(self.main_shader.uniform['view'], 1, GL_FALSE, self.view)
             glUniformMatrix4fv(self.main_shader.uniform['projection'], 1, GL_FALSE, self.projection)
-            glUniform1fv(self.main_shader.uniform['palette'], 36, pallete)
+            glUniform4fv(self.main_shader.uniform['palette'], 8, pallete)
 
             #grid
             with self.grid_vbo:
                 glEnableVertexAttribArray(0)
                 glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, self.grid_vbo)
                 glEnableVertexAttribArray(1)
-                glVertexAttribPointer(1, 1, GL_BYTE, GL_FALSE, 12, self.grid_vbo+8)
+                glVertexAttribIPointer(1, 1, GL_INT, 12, self.grid_vbo+8)
                 glDrawArrays(GL_LINES, 0, len(self.grid_vbo))
 
             # linhas
-            # glBlendEquation(GL_MAX)
+            glBlendEquation(GL_MAX)
 
-            # self.top_layer.drawItems()
-            # self.bottom_layer.drawItems()
+            self.top_layer.drawItems()
+            self.bottom_layer.drawItems()
 
             # # vias
             # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -175,6 +175,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             # textos
 
             #cursor
+            # TODO declarar essa coisa como stream!!
             c = np.array([(-1e9, self._cursor_pos.y(), 0), (1e9, self._cursor_pos.y(), 0),
                          (self._cursor_pos.x(), 1e9, 0), (self._cursor_pos.x(), -1e9, 0)], dtype='f4, f4, i4')
             vbo = glvbo.VBO(c)
@@ -182,7 +183,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
                 glEnableVertexAttribArray(0)
                 glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, vbo)
                 glEnableVertexAttribArray(1)
-                glVertexAttribPointer(1, 1, GL_INT, GL_FALSE, 12, vbo+8)
+                glVertexAttribIPointer(1, 1, GL_INT, 12, vbo+8)
                 glDrawArrays(GL_LINES, 0, 4)
 
     def resizeGL(self, width, height):
