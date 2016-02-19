@@ -57,9 +57,9 @@ class Line(LayerBase):
         pb = math.cos(c)*radius, math.sin(c)*radius
 
         p1 = l['x1']+pa[0], l['y1']+pa[1], self.color
-        p2 = l['x1']+pb[0], l['y1']+pb[1], self.color
-        p3 = l['x2']+pa[0], l['y2']+pa[1], self.color
-        p4 = l['x2']+pb[0], l['y2']+pb[1], self.color
+        p2 = l['x1']+pb[0], l['y1']+pb[1], self.color+1
+        p3 = l['x2']+pa[0], l['y2']+pa[1], self.color+2
+        p4 = l['x2']+pb[0], l['y2']+pb[1], self.color+3
 
         tri.append(p1)
         tri.append(p2)
@@ -74,9 +74,9 @@ class Line(LayerBase):
         def cap(x, y, ang):
             for i in range(Line.resolution):
                 tri.append( (x, y, self.color) )
-                tri.append( (x+math.cos(ang)*radius, y+math.sin(ang)*radius, self.color) )
+                tri.append( (x+math.cos(ang)*radius, y+math.sin(ang)*radius, self.color+1) )
                 ang += delta
-                tri.append( (x+math.cos(ang)*radius, y+math.sin(ang)*radius, self.color) )
+                tri.append( (x+math.cos(ang)*radius, y+math.sin(ang)*radius, self.color+2) )
 
         cap(l['x1'], l['y1'], b)
         cap(l['x2'], l['y2'], c)
