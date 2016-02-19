@@ -13,18 +13,21 @@ class LayerBase(object):
         self.color = color
         self.name = 'top'
         self.visible = True
-        self.triangles = np.array([], dtype='f')
-        self._vbo = glvbo.VBO(self.triangles)
+        self._vbo = glvbo.VBO(np.array([], dtype='f'))
         self.items = np.array([], dtype=Line.dtype)
 
     def __len__(self):
         return self.items.shape[0]
 
-    def drawLayer(self):
+    def drawItems(self):
         with self._vbo:
             glEnableVertexAttribArray(0)
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*4, self._vbo)
+            # glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*4, self._vbo)
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, self._vbo)
             glDrawArrays(GL_TRIANGLES, 0, self._vbo.data.size//2)
+
+    def drawLabel(self):
+        pass
 
 
 class Line(LayerBase):
@@ -89,8 +92,7 @@ class Line(LayerBase):
         idx = len(self.items)
         self.items = np.append(self.items, np.array(obj, dtype=Line.dtype))
         tri = self.openglfy(idx)
-        self.triangles = np.append(self.triangles, tri)
-        self._vbo.set_array(self.triangles)
+        self._vbo.set_array(np.append(self._vbo.data, tri))
         return idx
 
     def delete(self, idx):

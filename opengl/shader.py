@@ -200,6 +200,7 @@ class ShaderProgram(object):
         glUseProgram(0)
 
     __enter__ = install
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         ShaderProgram.uninstall()
         return False

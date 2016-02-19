@@ -175,12 +175,9 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         self.main_shader = shader.ShaderProgram(codefile='shaders/main.glsl', link=True)
 
         self.top_layer = layer.Line(self, (0,0,1,1))
-
         for i in range(20):
             a = math.radians(i*360/20)
-
             self.top_layer.add(0, 0, 20*2.54e6*math.cos(a), 20*2.54e6*math.sin(a), .1*2.54e6, 'bunda')
-
 
         self.grid1_vbo = glvbo.VBO(self.grid1_data)
         self.grid2_vbo = glvbo.VBO(self.grid2_data)
@@ -223,7 +220,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
                 glDrawArrays(GL_TRIANGLES, 0, len(self.line_data))
 
             glUniform4f(self.main_shader.uniform['color'], *self.top_layer.color)
-            self.top_layer.drawLayer()
+            self.top_layer.drawItems()
 
             # vias
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
