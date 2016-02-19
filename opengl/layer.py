@@ -13,7 +13,7 @@ class LayerBase(object):
         self.color = color
         self.name = 'top'
         self.visible = True
-        self._vbo = glvbo.VBO(np.array([], dtype='f'))
+        self._vbo = glvbo.VBO(np.array([], dtype='f4, f4, i4'))
         self.items = np.array([], dtype=Line.dtype)
 
     def __len__(self):
@@ -22,9 +22,10 @@ class LayerBase(object):
     def drawItems(self):
         with self._vbo:
             glEnableVertexAttribArray(0)
-            # glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*4, self._vbo)
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, self._vbo)
-            glDrawArrays(GL_TRIANGLES, 0, self._vbo.data.size//2)
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, self._vbo)
+            glEnableVertexAttribArray(1)
+            glVertexAttribIPointer(1, 1, GL_INT, 12, self._vbo+8)
+            glDrawArrays(GL_TRIANGLES, 0, self._vbo.data.size)
 
     def drawLabel(self):
         pass
@@ -45,8 +46,6 @@ class Line(LayerBase):
 
         l = self.items[idx]
 
-        print(l)
-
         a = math.atan2(l['y2']-l['y1'], l['x2']-l['x1'])
 
         b = a+math.pi/2
@@ -54,15 +53,13 @@ class Line(LayerBase):
 
         radius = l['width']/2
 
-        print(radius)
-
         pa = math.cos(b)*radius, math.sin(b)*radius
         pb = math.cos(c)*radius, math.sin(c)*radius
 
-        p1 = l['x1']+pa[0], l['y1']+pa[1]
-        p2 = l['x1']+pb[0], l['y1']+pb[1]
-        p3 = l['x2']+pa[0], l['y2']+pa[1]
-        p4 = l['x2']+pb[0], l['y2']+pb[1]
+        p1 = l['x1']+pa[0], l['y1']+pa[1], self.color
+        p2 = l['x1']+pb[0], l['y1']+pb[1], self.color
+        p3 = l['x2']+pa[0], l['y2']+pa[1], self.color
+        p4 = l['x2']+pb[0], l['y2']+pb[1], self.color
 
         tri.append(p1)
         tri.append(p2)
@@ -76,17 +73,15 @@ class Line(LayerBase):
 
         def cap(x, y, ang):
             for i in range(Line.resolution):
-                tri.append((x, y))
-                p = (x+math.cos(ang)*radius, y+math.sin(ang)*radius)
-                tri.append(p)
+                tri.append( (x, y, self.color) )
+                tri.append( (x+math.cos(ang)*radius, y+math.sin(ang)*radius, self.color) )
                 ang += delta
-                p = (x+math.cos(ang)*radius, y+math.sin(ang)*radius)
-                tri.append(p)
+                tri.append( (x+math.cos(ang)*radius, y+math.sin(ang)*radius, self.color) )
 
         cap(l['x1'], l['y1'], b)
         cap(l['x2'], l['y2'], c)
 
-        return np.array(tri, dtype='f')
+        return np.array(tri, dtype='f4, f4, i4')
 
     def add(self, *obj):
         idx = len(self.items)
