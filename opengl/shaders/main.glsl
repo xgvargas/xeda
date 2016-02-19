@@ -7,14 +7,13 @@ layout (location = 1) in int color;
 
 uniform mat4 view;
 uniform mat4 projection;
-uniform float palette[100];  // manter esse valor em dia!
+uniform vec4 palette[32];  // manter esse valor em dia!
 
 out vec4 vcolor;
 
 void main()
 {
-	int c = color*4;
-	vcolor = vec4(palette[c+0], palette[c+1], palette[c+2], palette[c+3]);
+	vcolor = vec4(palette[color]);
     gl_Position = projection * view * vec4(position, 0, 1);
 }
 

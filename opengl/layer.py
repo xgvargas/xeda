@@ -24,7 +24,7 @@ class LayerBase(object):
             glEnableVertexAttribArray(0)
             glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, self._vbo)
             glEnableVertexAttribArray(1)
-            glVertexAttribPointer(1, 1, GL_INT, GL_FALSE, 12, self._vbo+8)
+            glVertexAttribIPointer(1, 1, GL_INT, 12, self._vbo+8)
             glDrawArrays(GL_TRIANGLES, 0, self._vbo.data.size)
 
     def drawLabel(self):
@@ -57,9 +57,9 @@ class Line(LayerBase):
         pb = math.cos(c)*radius, math.sin(c)*radius
 
         p1 = l['x1']+pa[0], l['y1']+pa[1], self.color
-        p2 = l['x1']+pb[0], l['y1']+pb[1], self.color+1
-        p3 = l['x2']+pa[0], l['y2']+pa[1], self.color+2
-        p4 = l['x2']+pb[0], l['y2']+pb[1], self.color+3
+        p2 = l['x1']+pb[0], l['y1']+pb[1], self.color
+        p3 = l['x2']+pa[0], l['y2']+pa[1], self.color
+        p4 = l['x2']+pb[0], l['y2']+pb[1], self.color
 
         tri.append(p1)
         tri.append(p2)
@@ -74,9 +74,9 @@ class Line(LayerBase):
         def cap(x, y, ang):
             for i in range(Line.resolution):
                 tri.append( (x, y, self.color) )
-                tri.append( (x+math.cos(ang)*radius, y+math.sin(ang)*radius, self.color+1) )
+                tri.append( (x+math.cos(ang)*radius, y+math.sin(ang)*radius, self.color) )
                 ang += delta
-                tri.append( (x+math.cos(ang)*radius, y+math.sin(ang)*radius, self.color+2) )
+                tri.append( (x+math.cos(ang)*radius, y+math.sin(ang)*radius, self.color) )
 
         cap(l['x1'], l['y1'], b)
         cap(l['x2'], l['y2'], c)
