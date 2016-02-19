@@ -75,7 +75,7 @@ class ShaderProgram(object):
         return shader
 
     def _uniformFinder(self, code):
-        for u in re.finditer(r'uniform\s+[^;]{2,}\s+(\w+);', code):
+        for u in re.finditer(r'uniform\s+[^;]{2,}\s+(\w+)[\[;]', code):
             self.uniform[u.group(1)] = None
 
     def addVertexShader(self, code):

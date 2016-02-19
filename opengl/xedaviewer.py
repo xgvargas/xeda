@@ -128,8 +128,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         print(self.line_data.shape)
 
 
-        self.grid1_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), .1*2.54e6, .1*2.54e6)
-        self.grid2_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), 1*2.54e6, 1*2.54e6)
+        # self.grid1_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), .1*2.54e6, .1*2.54e6)
+        self.grid1_data = self._generateGrid((-10*2.54e6, 10*2.54e6), (-10*2.54e6, 10*2.54e6), 1*2.54e6, 1*2.54e6)
 
         self.view = np.identity(4, dtype='f')
         transf.scale(self.view, 1e-7)
@@ -137,14 +137,14 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
 
     def _generateGrid(self, w, h, dx, dy):
         g = []
-        for x in range(int(w[0]), int(w[1]), int(dx)):
-            g.append([x, h[0]])
-            g.append([x, h[1]])
-        for y in range(int(h[0]), int(h[1]), int(dy)):
-            g.append([w[0], y])
-            g.append([w[1], y])
+        for x in range(int(w[0]), int(w[1]+1), int(dx)):
+            g.append( (x, h[0], 1) )
+            g.append( (x, h[1], 1) )
+        for y in range(int(h[0]), int(h[1]+1), int(dy)):
+            g.append( (w[0], y, 2) )
+            g.append( (w[1], y, 1) )
 
-        return np.array(g, dtype='f')
+        return np.array(g, dtype='f4, f4, i4')
 
     def minimumSizeHint(self):
         """Hint of the minimum size this widget accepts.
@@ -174,13 +174,20 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
 
         self.main_shader = shader.ShaderProgram(codefile='shaders/main.glsl', link=True)
 
-        self.top_layer = layer.Line(self, (0,0,1,1))
+
+        self.top_layer = layer.Line(self, 1)
         for i in range(20):
             a = math.radians(i*360/20)
             self.top_layer.add(0, 0, 20*2.54e6*math.cos(a), 20*2.54e6*math.sin(a), .1*2.54e6, 'bunda')
 
+        self.bottom_layer = layer.Line(self, 2)
+        for x in range(-100, 100, 10):
+            for y in range(-100, 100, 5):
+                self.bottom_layer.add(x*2.54e5, y*2.54e5, x*2.54e5+.25*2.54e6, y*2.54e5+.25*2.54e6, .014*2.54e6, 'meleca')
+
+
         self.grid1_vbo = glvbo.VBO(self.grid1_data)
-        self.grid2_vbo = glvbo.VBO(self.grid2_data)
+        # self.grid2_vbo = glvbo.VBO(self.grid2_data)
         self.line_vbo = glvbo.VBO(self.line_data)
         self.via_vbo = glvbo.VBO(self.via_data)
 
@@ -193,44 +200,36 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         """
         glClear(GL_COLOR_BUFFER_BIT)
 
+        self.pallete = np.array([(1,1,0,1), (0,1,0,1), (0,0,1,1), (1,0,0,1), (1,0,1,1), (1,0,1,1), (1,0,1,1), (1,0,1,1)], dtype='f')
+
         with self.main_shader:
             glUniformMatrix4fv(self.main_shader.uniform['view'], 1, GL_FALSE, self.view)
             glUniformMatrix4fv(self.main_shader.uniform['projection'], 1, GL_FALSE, self.projection)
+            glUniform4fv(self.main_shader.uniform['palette'], 8, self.pallete)
 
             #grid
             with self.grid1_vbo:
                 glEnableVertexAttribArray(0)
-                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid1_vbo.data[0].nbytes, self.grid1_vbo)
-                glUniform4f(self.main_shader.uniform['color'], .2, .2, 0, 1)
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, self.grid1_vbo)
+                glEnableVertexAttribArray(1)
+                glVertexAttribPointer(1, 1, GL_INT, GL_FALSE, 12, self.grid1_vbo+8)
                 glDrawArrays(GL_LINES, 0, len(self.grid1_vbo))
 
-            with self.grid2_vbo:
-                glEnableVertexAttribArray(0)
-                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.grid2_vbo.data[0].nbytes, self.grid2_vbo)
-                glUniform4f(self.main_shader.uniform['color'], .5, .5, .5, 1)
-                glDrawArrays(GL_LINES, 0, len(self.grid2_vbo))
-
             # linhas
-            glBlendEquation(GL_MAX)
+            # glBlendEquation(GL_MAX)
 
-            with self.line_vbo:
-                glEnableVertexAttribArray(0)
-                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.line_vbo.data[0].nbytes, self.line_vbo)
-                glUniform4f(self.main_shader.uniform['color'], 1, 0, 0, .7)
-                glDrawArrays(GL_TRIANGLES, 0, len(self.line_data))
-
-            glUniform4f(self.main_shader.uniform['color'], *self.top_layer.color)
             self.top_layer.drawItems()
+            # self.bottom_layer.drawItems()
 
-            # vias
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            glBlendEquation(GL_FUNC_ADD)
+            # # vias
+            # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            # glBlendEquation(GL_FUNC_ADD)
 
-            with self.via_vbo:
-                glEnableVertexAttribArray(0)
-                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_vbo.data[0].nbytes, self.via_vbo)
-                glUniform4f(self.main_shader.uniform['color'], .5, .5, .5, .6)
-                glDrawArrays(GL_TRIANGLES, 0, len(self.via_data))
+            # with self.via_vbo:
+            #     glEnableVertexAttribArray(0)
+            #     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_vbo.data[0].nbytes, self.via_vbo)
+            #     # glUniform4f(self.main_shader.uniform['color'], .5, .5, .5, .6)
+            #     glDrawArrays(GL_TRIANGLES, 0, len(self.via_data))
 
             # textos
 
@@ -242,7 +241,8 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             height (int): new widget height
         """
         glViewport(0, 0, width, height)
-        scale = 1/6e6 #self.projection[0, 0]
+        self.window = QtCore.QSize(width, height)
+        # scale = 1/6e6 #self.projection[0, 0]
         self.projection = transf.ortho(-width/height, width/height, -1, 1, -1, 1)
         # print(self.projection[0,0])
         # transf.scale(self.projection, scale)
