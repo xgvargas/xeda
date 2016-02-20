@@ -25,21 +25,21 @@ def generateVia(tri, x, y, o_d, i_d):
     ang = 0
     for i in range(res):
 
-        tri.append((x, y))
+        tri.append((x, y, 6))
 
-        p = (x+math.cos(ang)*o_r, y+math.sin(ang)*o_r)
-        pi2 = (x+math.cos(ang)*i_r, y+math.sin(ang)*i_r)
+        p = (x+math.cos(ang)*o_r, y+math.sin(ang)*o_r, 6)
+        pi2 = (x+math.cos(ang)*i_r, y+math.sin(ang)*i_r, 6)
         tri.append(p)
 
         ang += delta
-        p = (x+math.cos(ang)*o_r, y+math.sin(ang)*o_r)
-        pi3 = (x+math.cos(ang)*i_r, y+math.sin(ang)*i_r)
+        p = (x+math.cos(ang)*o_r, y+math.sin(ang)*o_r, 6)
+        pi3 = (x+math.cos(ang)*i_r, y+math.sin(ang)*i_r, 6)
 
         tri.append(p)
 
         #-----
 
-        tri.append((x, y))
+        tri.append((x, y, 6))
         tri.append(pi2)
         tri.append(pi3)
 
@@ -64,7 +64,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         for x in range(-100, 100, 2):
             for y in range(-100, 100, 2):
                 generateVia(v, x*25.4e5, y*25.4e5, .1*25.4e6, .05*25.4e6)
-        self.via_data = np.array(v, dtype='f')
+        self.via_data = np.array(v, dtype='f4, f4, i4')
 
         self.view = np.identity(4, dtype='f')
         transf.scale(self.view, 1e-8)
@@ -126,7 +126,6 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         g2 = self._generateGrid((-10*25.4e6, 10*25.4e6), (-10*25.4e6, 10*25.4e6), 1*25.4e6, 1*25.4e6, 2)
 
         self.grid_vbo = glvbo.VBO(np.append(g1, g2))
-        # self.grid_vbo = glvbo.VBO(g2)
 
         self.via_vbo = glvbo.VBO(self.via_data)
 
@@ -140,7 +139,7 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
         glClear(GL_COLOR_BUFFER_BIT)
 
         pallete = np.array([(1,1,1,1), (.4,.4,.1,1), (.6,.6,.6,1), (1,1,1,1),
-                            (1,0,0,1), (0,0,1,1), (1,0,1,1), (1,0,1,1)], dtype='f')
+                            (1,0,0,1), (0,0,1,1), (.7,.7,.7,.7), (1,0,1,1)], dtype='f')
 
         with self.main_shader:
             glUniformMatrix4fv(self.main_shader.uniform['view'], 1, GL_FALSE, self.view)
@@ -162,14 +161,15 @@ class XedaViewerBase(QtOpenGL.QGLWidget):
             self.bottom_layer.drawItems()
 
             # # vias
-            # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            # glBlendEquation(GL_FUNC_ADD)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glBlendEquation(GL_FUNC_ADD)
 
-            # with self.via_vbo:
-            #     glEnableVertexAttribArray(0)
-            #     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, self.via_vbo.data[0].nbytes, self.via_vbo)
-            #     # glUniform4f(self.main_shader.uniform['color'], .5, .5, .5, .6)
-            #     glDrawArrays(GL_TRIANGLES, 0, len(self.via_data))
+            with self.via_vbo:
+                glEnableVertexAttribArray(0)
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, self.via_vbo)
+                glEnableVertexAttribArray(1)
+                glVertexAttribIPointer(1, 1, GL_INT, 12, self.via_vbo+8)
+                glDrawArrays(GL_TRIANGLES, 0, len(self.via_data))
 
             # textos
 

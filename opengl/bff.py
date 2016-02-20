@@ -5,6 +5,11 @@ import array
 from OpenGL.GL import *
 
 
+'''aqui tem uma ideia de como fazer isso:
+
+http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-11-2d-text/
+'''
+
 class BFF(object):
 
     def __init__(self, filename):
