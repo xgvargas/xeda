@@ -174,7 +174,6 @@ class ShaderProgram(object):
         Returns:
             int: Location of this uniform.
         """
-        # return glGetUniformLocation(self.program, name)
         return self.uniform.get(name, None)
 
     def getAttrib(self, name):
